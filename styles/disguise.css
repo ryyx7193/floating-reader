@@ -1,0 +1,360 @@
+/* 老板模式（伪装层）：把主窗整体盖成一屏「看起来在工作」的画面。
+   三种皮肤：.word（办公文档）/ .code（代码编辑器）/ .sheet（数据表格）。
+   刻意不跟随主窗的深色/浅色主题——伪装的目的就是「像另一个程序」，越独立越真。
+   只负责画；开关与皮肤选择在 scripts/disguise.js + scripts/app.js。 */
+
+.disguise-layer { display:none; position:fixed; inset:0; z-index:var(--z-disguise); overflow:auto; cursor:default; }
+.disguise-layer.on { display:block; }
+.disguise-layer * { box-sizing:border-box; }
+.disguise-layer::-webkit-scrollbar { width:10px; height:10px; }
+.disguise-layer::-webkit-scrollbar-thumb { background:rgba(140,150,165,0.55); border-radius:5px; }
+.disguise-layer::-webkit-scrollbar-track { background:transparent; }
+
+/* ================= 皮肤一：办公文档（仿 Word） ================= */
+.disguise-layer.word { background:#e6e6e6; color:#1b1b1b; font-family:"Microsoft YaHei","Segoe UI",sans-serif; font-size:14px; }
+.word .dg-ribbon { position:sticky; top:0; z-index:3; display:flex; align-items:center; gap:16px; padding:7px 12px; background:#2b579a; color:#fff; font-size:12px; }
+.word .dg-ribbon .dg-logo { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:3px; background:#fff; color:#2b579a; font-weight:700; font-size:12px; }
+.word .dg-ribbon .dg-docname { margin-left:auto; opacity:.85; }
+.word .dg-page { max-width:760px; margin:16px auto 40px; padding:52px 64px 64px; background:#fff; box-shadow:0 1px 6px rgba(0,0,0,0.18); line-height:1.9; user-select:text; }
+.word .dg-page h1 { margin:0 0 6px; font-size:20px; text-align:center; font-weight:700; font-family:"SimSun","宋体",serif; }
+.word .dg-page .dg-meta { margin:0 0 22px; padding-bottom:12px; border-bottom:1px solid #ddd; text-align:center; color:#666; font-size:12px; }
+.word .dg-page h2 { margin:22px 0 8px; font-size:15px; font-family:"SimSun","宋体",serif; }
+.word .dg-page p { margin:0 0 10px; text-indent:2em; font-family:"SimSun","宋体",serif; }
+.word .dg-page ol { margin:0 0 10px; padding-left:2em; font-family:"SimSun","宋体",serif; }
+.word .dg-page ol li { margin-bottom:6px; }
+.word .dg-page .dg-sign { margin-top:34px; text-indent:0; text-align:right; font-family:"SimSun","宋体",serif; }
+/* V4.3.41：季度概览表 / 目录 / 各周周报标题（内容加量后新增的结构） */
+.word .dg-page table.dg-tbl { border-collapse:collapse; width:100%; margin:0 0 14px; font-size:12.5px; }
+.word .dg-page table.dg-tbl th, .word .dg-page table.dg-tbl td { border:1px solid #c9d3e0; padding:4px 8px; }
+.word .dg-page table.dg-tbl th { background:#eef2f8; font-weight:600; }
+.word .dg-page table.dg-tbl td.c { text-align:center; }
+.word .dg-page ol.dg-toc { columns:2; column-gap:32px; }
+.word .dg-page h1.dg-w2 { margin-top:44px; padding-top:18px; border-top:2px solid #2b579a; font-size:17px; text-align:left; }
+.word .dg-status { position:sticky; bottom:0; display:flex; gap:22px; padding:4px 14px; background:#f3f3f3; border-top:1px solid #d8d8d8; color:#555; font-size:12px; }
+.word .dg-status .dg-sp { margin-left:auto; }
+
+/* ================= 皮肤二：代码编辑器（仿 VS Code） ================= */
+.disguise-layer.code { background:#1e1e1e; color:#d4d4d4; font-family:Consolas,"Courier New",monospace; font-size:13px; }
+.code .dg-tabs { position:sticky; top:0; z-index:3; display:flex; align-items:center; background:#252526; border-bottom:1px solid #1b1b1b; }
+.code .dg-tabs span { padding:7px 16px; color:#9a9a9a; border-right:1px solid #1b1b1b; font-size:12px; }
+.code .dg-tabs span.on { background:#1e1e1e; color:#fff; border-top:1px solid #0a84ff; }
+/* 🟥 V4.3.52：文件标签真切换 —— 可点的才有 pointer/hover，分支标签保持纯展示 */
+.code .dg-tabs span[data-f] { cursor:pointer; }
+.code .dg-tabs span[data-f]:hover { background:#2a2d2e; color:#e8e8e8; }
+.code .dg-tabs .dg-branch { margin-left:auto; border:none; color:#7aa2f7; }
+.code .dg-body { display:flex; padding:10px 0 26px; min-height:calc(100vh - 62px); }
+/* 一次只显示一个文件；.dg-file.on 顶替原 gutter+code 直接做 .dg-body 的 flex 子项 */
+.code .dg-file { display:none; flex:1; min-width:0; }
+.code .dg-file.on { display:flex; }
+.code .dg-gutter { flex:0 0 auto; padding:0 10px 0 14px; text-align:right; color:#6b6b6b; line-height:1.65; user-select:none; }
+.code .dg-code { flex:1; padding:0 16px 0 4px; margin:0; line-height:1.65; white-space:pre; }
+.code .dg-c { color:#6a9955; font-style:normal; }
+.code .dg-s { color:#ce9178; font-style:normal; }
+.code .dg-k { color:#569cd6; font-style:normal; }
+.code .dg-n { color:#b5cea8; font-style:normal; }
+.code .dg-f { color:#dcdcaa; font-style:normal; }
+.code .dg-status { position:sticky; bottom:0; display:flex; gap:20px; padding:4px 14px; background:#007acc; color:#fff; font-size:12px; }
+.code .dg-status .dg-sp { margin-left:auto; }
+
+/* ================= 皮肤三：数据表格（仿 Excel） ================= */
+.disguise-layer.sheet { background:#fff; color:#1b1b1b; font-family:"Microsoft YaHei","Segoe UI",sans-serif; font-size:13px; }
+.sheet .dg-fbar { position:sticky; top:0; z-index:3; display:flex; align-items:center; gap:10px; padding:5px 10px; background:#f3f3f3; border-bottom:1px solid #d0d0d0; }
+.sheet .dg-fbar .dg-ref { min-width:64px; padding:2px 8px; background:#fff; border:1px solid #c8c8c8; font-size:12px; }
+.sheet .dg-fbar .dg-fx { color:#217346; font-style:italic; font-size:12px; }
+.sheet .dg-fbar .dg-formula { flex:1; padding:2px 8px; background:#fff; border:1px solid #c8c8c8; font-size:12px; }
+.sheet .dg-grid { border-collapse:collapse; table-layout:fixed; width:100%; }
+.sheet .dg-grid th, .sheet .dg-grid td { border:1px solid #dcdcdc; padding:3px 7px; height:22px; overflow:hidden; white-space:nowrap; }
+.sheet .dg-grid th { background:#f3f3f3; color:#444; font-weight:400; text-align:center; }
+.sheet .dg-grid th.dg-corner { width:42px; }
+/* V4.3.33b：选择器写的是 th，但 disguise.js 生成的行号单元格全是 <td class="dg-rowhead"> ——
+   这条规则从来没命中过，表格左侧那列行号一直缺灰底与居中。 */
+.sheet .dg-grid td.dg-rowhead { background:#f3f3f3; color:#666; text-align:center; }
+.sheet .dg-grid td.dg-head { background:#e8f2ea; color:#217346; font-weight:600; }
+.sheet .dg-grid td.num { text-align:right; }
+.sheet .dg-tabs { position:sticky; bottom:26px; display:flex; align-items:center; gap:2px; padding:4px 10px 0; background:#f3f3f3; border-top:1px solid #d0d0d0; }
+.sheet .dg-tabs span { padding:3px 14px; color:#444; font-size:12px; border:1px solid transparent; border-bottom:none; }
+.sheet .dg-tabs span.on { background:#fff; border-color:#d0d0d0; font-weight:600; }
+/* 🟥 V4.3.52：sheet 标签真切换 —— 前三个 data-v 可点，＋保持装饰 */
+.sheet .dg-tabs span[data-v] { cursor:pointer; }
+.sheet .dg-tabs span[data-v]:hover { background:#e5e6e8; }
+.sheet .dg-view { display:none; }
+.sheet .dg-view.on { display:block; }
+.sheet .dg-status { position:sticky; bottom:0; display:flex; gap:22px; padding:4px 14px; background:#f3f3f3; border-top:1px solid #d0d0d0; color:#555; font-size:12px; }
+.sheet .dg-status .dg-sp { margin-left:auto; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   🆕 V4.3.86：伪装外观**常驻阅读皮肤**（body.dsg-read + body.dsg-<skin>）
+   ══════════════════════════════════════════════════════════════════════════
+   与上面 .disguise-layer（全窗遮罩、盖住真正文）完全不同：这里**不遮不拦**，
+   只是把正文本身换成假程序的外观，所以可以照常滚动、翻页、选中、用快捷键。
+
+   🟥 三条硬约束（改之前先读）：
+     ① **只改配色与字族，绝不动盒模型**。分页/双栏的几何不变式依赖
+        「内容盒宽 == 视口宽」「页步长 == 内容宽 + 栏距」；一旦在这里加 padding/margin/
+        max-width，双栏页步长会跟着漂，_v470 那批几何门禁会红，实机会翻页错位。
+        （只允许 background / color / font-family / box-shadow —— 这些都不进布局。）
+     ② 字体**跟随皮肤**（主人定的）：办公文档=宋体、代码=等宽、表格=等线。
+        只换字族与配色，**不覆盖用户设的字号**（字号仍由 --font-base 与内联 style 决定）。
+     ③ 标题栏一起换色 —— 光换正文而标题栏还是深色鲸鱼风，一眼就露馅。
+        标题栏文字本身已由 DISGUISE_META 改成「工作周报.docx - 写字板」之类。
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ---- 皮肤一：办公文档（仿 Word）---- */
+body.dsg-read.dsg-word { background:transparent; }
+/* 🎨 V4.3.91：底色/字色改由窗口变量与 JS 接管（见上面那段），
+   这里只保留字族与 mark 配色。 */
+body.dsg-read.dsg-word .title-bar { background:#2b579a; color:#fff; }
+body.dsg-read.dsg-word .title-bar .title-text,
+body.dsg-read.dsg-word .title-bar .tb-title { color:#fff; }
+body.dsg-read.dsg-word .content mark.ann-yellow { background:rgba(255,235,120,0.75); }
+body.dsg-read.dsg-word .content mark.search-highlight { background:#ffe680; color:#1b1b1b; }
+
+/* ---- 皮肤二：代码 / 终端（仿 VS Code）---- */
+body.dsg-read.dsg-code { background:transparent; }
+body.dsg-read.dsg-code .title-bar { background:#323233; color:#cccccc; }
+body.dsg-read.dsg-code .content mark.ann-yellow { background:rgba(247,210,92,0.30); }
+body.dsg-read.dsg-code .content mark.ann-green  { background:rgba(110,215,150,0.26); }
+body.dsg-read.dsg-code .content mark.ann-blue   { background:rgba(120,180,255,0.28); }
+body.dsg-read.dsg-code .content mark.ann-pink   { background:rgba(255,150,190,0.26); }
+body.dsg-read.dsg-code .content mark.search-highlight { background:#613214; color:#f0f0f0; }
+
+/* ---- 皮肤三：数据表格（仿 Excel）---- */
+body.dsg-read.dsg-sheet { background:transparent; }
+body.dsg-read.dsg-sheet .title-bar { background:#217346; color:#fff; }
+body.dsg-read.dsg-sheet .title-bar .title-text,
+body.dsg-read.dsg-sheet .title-bar .tb-title { color:#fff; }
+body.dsg-read.dsg-sheet .content mark.search-highlight { background:#c6efce; color:#1f1f1f; }
+
+/* 🖋 V4.3.87：shell 模式（常驻伪装）—— 只借外壳，正文用真的书。
+   🟥 三条要点：
+     ① 外壳全部 pointer-events:none —— 它只是"画上去的框"，不能挡住阅读、翻页、选中；
+     ② 假纸面透明 —— 真正文在下面透出来，才叫"里面是我们自己的内容"；
+     ③ 给正文区让出蓝条的高度，否则文字会被假蓝条压住。 */
+/* 🛥 V4.3.90（主人：“开启之后就卡住了，其他功能打不开了” + “你这样会把全按钮都覆盖的”）
+   🛥 外壳原来是 `position:fixed; inset:0` —— **铺满整窗**，连标题栏那一条都盖住。
+   配合下面把标题栏也隐掉，等于把**唯一的操作入口**一起没了：
+   工具栏 / 设置 / 目录 / 跟随 / 专注 / 最小化 / 全屏 / 关闭 全在那里。
+   现在：外壳**从标题栏下沿开始**，只盖正文区；标题栏照常可点。
+   高度由 JS 量出来写进 --dsg-shell-top（标题栏会跟 --ui-scale 变化，写死像素会错位）。 */
+.disguise-layer.shell { top:var(--dsg-shell-top, 46px); pointer-events:none; background:transparent; }
+.disguise-layer.shell * { pointer-events:none !important; }
+.disguise-layer.shell .dg-page,
+.disguise-layer.shell .dg-real-host { background:transparent !important; box-shadow:none !important; }
+/* 🛥 V4.3.90：正文内衬直接跟**实测**的 chrome 高度走（--dsg-pad-top / --dsg-pad-bottom，
+   由 scripts/disguise.js:measureShellChrome 写入）。
+   旧做法是三套皮肤各写一个死数字（34 / 30 / 30+24），而它们的 chrome 高度会随字号与
+   系统比例变 —— 写死就会“要么压住正文、要么留条空白”。 */
+body.dsg-read .content-wrapper {
+  padding-top:calc(6px + var(--page-margin, 0px) + var(--dsg-pad-top, 0px));
+  padding-bottom:calc(6px + var(--page-margin, 0px) + var(--dsg-pad-bottom, 0px));
+}
+
+/* 🟥 V4.3.87 截图实测修正（第一版三个穿帮点）：
+   ① 假状态栏（第1页，共17页…）会浮到页面**中间** —— 因为纸面被清空后变矮了，状态栏跟着上移。
+      常驻模式下它没有意义（页数是假的），直接隐藏；
+   ② 应用自己的「阅读器」标题文字、底部「上一章/下一章/加载」按钮还在，一眼穿帮 → 常驻时全部隐掉；
+   ③ 纸面要撑满可用高度，否则白纸只占上半截。 */
+/* 🛥 V4.3.90：外壳用**竖向 flex** 布局 —— 这样 chrome 自然贴顶 / 贴底，
+   不用靠 sticky 去猜（容器不滚动时 sticky 会退化成普通排列，
+   word 那条假状态栏当年就是这么漂到页面中间去的）。 */
+.disguise-layer.shell.on { display:flex; flex-direction:column; }
+.disguise-layer.shell > .dg-body,
+.disguise-layer.shell > .dg-page,
+.disguise-layer.shell > .dg-view { flex:1 1 auto; min-height:0; }
+.disguise-layer.shell > .dg-status { margin-top:auto; }
+/* 🛥 内容容器在 shell 模式下已经被清空，它们自带的 padding/margin/min-height
+   只会把布局撑开（code 的 .dg-body 就写了 min-height:calc(100vh - 62px)）。全部归零。 */
+.disguise-layer.shell .dg-body,
+.disguise-layer.shell .dg-page,
+.disguise-layer.shell .dg-view { min-height:0 !important; padding:0 !important; margin:0 !important; max-width:none !important; }
+/* 三套皮肤的 chrome 归属不同：
+   word  → 顶部蓝条（ribbon）；底那条假状态栏是假页码，常驻下没意义 → **藏**
+   code  → 顶部文件标签栏 + 底部蓝色状态栏（VS Code 的身份）→ **都留**
+   sheet → 底部工作表标签 + 状态栏（Excel 的身份）→ **都留** */
+/* 🛥 V4.3.91：word 的状态栏**改回显示** ——
+   当年它会漂到页面中间，是因为靠 `position:sticky` 而容器不滚动；
+   现在外壳是竖向 flex，`.dg-status { margin-top:auto }` 会把它压在底部 ——
+   而且 Word 底部本来就有一条状态栏（页码/字数/语言），没它反而更假。 */
+
+/* 📏 word 的标尺（浅灰底 + 刻度线）：只用背景渐变画，不加 DOM */
+.disguise-layer.shell .dg-ruler {
+  flex:0 0 auto; height:14px;
+  background:
+    repeating-linear-gradient(to right, rgba(0,0,0,0.18) 0 1px, transparent 1px 12px),
+    linear-gradient(#f3f3f3, #e8e8e8);
+  border-bottom:1px solid #d0d0d0;
+}
+/* 🖱 顶部透明拖动带：高度跟顶部 chrome，鼠标放上去就能拖窗口 */
+.disguise-layer.shell .dg-drag {
+  position:fixed; top:0; left:0; right:0;
+  height:var(--dsg-pad-top, 34px);
+  -webkit-app-region:drag; pointer-events:auto !important; z-index:10;
+  background:transparent;
+}
+/* 📊 sheet 的顶部功能区（常驻外壳专属）：绿底，与标题栏同色，两段看成一整块 Excel 头部 */
+.disguise-layer.shell.sheet .dg-ribbon { position:static; background:#217346; color:#fff;
+  display:flex; align-items:center; gap:14px; padding:6px 12px; font-size:12px; }
+.disguise-layer.shell.sheet .dg-ribbon .dg-logo { display:inline-flex; align-items:center; justify-content:center;
+  width:18px; height:18px; border-radius:3px; background:#fff; color:#217346; font-weight:700; font-size:12px; }
+.disguise-layer.shell.sheet .dg-ribbon .dg-docname { margin-left:auto; opacity:.85; }
+
+/* 🟥 V4.3.87（主人：“不是把整个界面套进去，是把进入专注模式后的**干净页面**套进去”）
+   常驻伪装 = 专注模式那种干净页面 + 假外壳。
+   所以这里把**所有自有 chrome 全部隐掉**（标题栏 / 拖动条 / 翻章行 / 标签栏 / 状态行 / 失败条 / 伴随条），
+   只留正文。顶部那条蓝栏由假外壳提供 —— 这样看起来就是一份 Word 文档，没有任何阅读器痕迹。
+   🛥 标题栏隐掉后没有关闭按钮：退出用快捷键（同一个开关）或托盘，与专注模式一致。 */
+/* 🛥 V4.3.90b（主人：“直接把头顶的状态栏套进来…已经不像一个工作文档了，
+   你还不如设一个退出键”）。
+   所以：标题栏**还是藏掉**（保持干净文档外观），退出靠**一个小按钮**（.dg-exit）。
+   拖动靠 #focusDragBar（透明拖拽热区，看不见但能拖窗口）。 */
+body.dsg-read .title-bar,
+body.dsg-read .btn-group,
+body.dsg-read .tab-bar,
+body.dsg-read #failedBar,
+body.dsg-read #companionBar,
+body.dsg-read .footer,
+body.dsg-read .status-bar { display:none !important; }   /* 底部状态行：容器叫 .footer（里面是 #statusText / 进度条 / #modeIndicator） */
+/* 🛥 V4.3.90：标题栏**必须留着** —— 它是工具栏 / 设置 / 目录 / 跟随 / 专注 / 窗口控制的**唯一入口**。
+   只把书名文字藏掉（否则一眼看到「呢喃诗章」就穿帮），伪装标题由下面那条假蓝条里的文件名承担。 */
+body.dsg-read #titleText { display:none !important; }
+/* 🛥 标题栏藏了之后，窗口会**拖不动** —— 把专注模式那条透明拖拽热区借过来：
+   高 14px、看不见、不挡正文（外壳 pointer-events:none，事件会穿过去命中它）。 */
+body.dsg-read #focusDragBar { display:block !important; }
+
+/* 🎨 V4.3.91（主人：“阅读窗口的颜色一定要跟主题匹配…或者常驻的那个皮肤匹配”）：
+   常驻皮肤开着时，**整个阅读窗**的底色必须跟皮肤走 ——
+   用户主题的背景色是内联写在 #mainContent 上的（applyBgColorRGB），
+   必须用 `!important` 才压得过内联自定义属性。
+   🛥 同时强制 `--bg-alpha:1`：半透明的“Word 文档”一眼就穿帮。 */
+body.dsg-read #mainContent { --bg-alpha:1 !important; }
+/* 📄 V4.3.91b（主人：“左右两边没有页面栏，只有一个阅读窗口的边”）：
+   文字不能顶到窗口边 —— 用 **chunk 外边距**收进 44px。
+   🛥 不能用 .content 的 padding：分页页步长按滚动容器实测宽度算，
+     动它会把每一“页”整体挪位；chunk margin 只改文字位置，几何不变。 */
+body.dsg-read.dsg-word  #mainContent { --bg-r:255 !important; --bg-g:255 !important; --bg-b:255 !important; }
+body.dsg-read.dsg-word .content .chunk { margin-left:44px; margin-right:44px; }
+/* 🟥 V4.3.96（清待办：视觉复核时量到 code/sheet 正文离窗口左边只有 0~8px）
+   word 皮肤有 44px 纸边距（模拟 A4 页边距），另两套一直是 0 —— 文字直接贴着窗口左沿。
+   真 VS Code 文本左侧有行号栏、真 Excel 有行号列，都不会贴边。
+   这里用 **chunk 外边距**而不是给 .content 加 padding：后者会改滚动容器的 clientWidth，
+   而分页页步长按实测宽度算（V4.3.70 的坑），改内衬等于把每一"页"整体挪位。 */
+body.dsg-read.dsg-code .content .chunk { margin-left:20px; margin-right:14px; }
+body.dsg-read.dsg-sheet .content .chunk { margin-left:16px; margin-right:12px; }
+body.dsg-read.dsg-code  #mainContent { --bg-r:30  !important; --bg-g:30  !important; --bg-b:30  !important; }
+body.dsg-read.dsg-sheet #mainContent { --bg-r:255 !important; --bg-g:255 !important; --bg-b:255 !important; }
+/* 🛥 内容层不再自带底色 —— 底色只有一个真源（窗口），
+   两处各写一份、改一漏一就是“白纸周围一圈别的颜色”这种接缝。 */
+body.dsg-read .content-wrapper,
+body.dsg-read .content { background:transparent !important; box-shadow:none !important; }
+
+/* 🚪 V4.3.91c（主人：“取消按钮要做成适配该皮肤的样式，
+   放在窗口的右上角正常的打叉的位置”）：
+   就是一个正常窗口的关闽键：无底色、悬停才出底，
+   **配色跟着各自皮肤的 chrome 走**（word 蓝条上白字 / code 标签栏上浅灰 /
+   sheet 绿区上白字）。
+   🛥 两个必须：① z-index 压过 .dg-drag（它占了顶部拖动带）；
+     ② `-webkit-app-region:no-drag` —— 不写这条，按钮看得见却点不动
+     （Electron 按文档顺序合成可拖区，no-drag 在后面声明才会减掉自己那块）。 */
+/* V4.3.92c：右上角变成两个键 —— [取消伪装] [关闭]。
+   基础样式共用，只有 right 各自不同（与 Windows 窗口按钮同一套排法：最右是关闭）。 */
+.disguise-layer.shell .dg-exit,
+.disguise-layer.shell .dg-unmask {
+  position:fixed; top:5px; width:26px; height:26px; padding:0;
+  display:flex; align-items:center; justify-content:center;
+  border:none; border-radius:var(--r-sm);
+  background:transparent; color:#fff; font-size:15px; line-height:1;
+  cursor:pointer; opacity:0.7; transition:opacity 0.15s ease, background 0.15s ease;
+  pointer-events:auto !important; z-index:11;
+  -webkit-app-region:no-drag;
+}
+.disguise-layer.shell .dg-exit { right:12px; }
+.disguise-layer.shell .dg-unmask { right:46px; }
+.disguise-layer.shell .dg-unmask svg {
+  width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+.disguise-layer.shell .dg-exit:hover,
+.disguise-layer.shell .dg-unmask:hover { opacity:1; background:rgba(255,255,255,0.16); }
+.disguise-layer.shell.word  .dg-exit,
+.disguise-layer.shell.word  .dg-unmask { color:rgba(255,255,255,0.92); }
+.disguise-layer.shell.code  .dg-exit,
+.disguise-layer.shell.code  .dg-unmask { color:#cccccc; }
+.disguise-layer.shell.code  .dg-exit:hover,
+.disguise-layer.shell.code  .dg-unmask:hover { background:#3a3d41; }
+.disguise-layer.shell.sheet .dg-exit,
+.disguise-layer.shell.sheet .dg-unmask { color:rgba(255,255,255,0.92); }
+/* 🟥 V4.3.92（视觉复核发现）：退出键压字
+   三套皮肤的标题行右端都塞满了文字 —— word 是文件名「…（汇编）.docx」、
+   sheet 是「…工时流水.xlsx」、code 是一串标签页 —— 而 .dg-exit 是 position:fixed
+   贴在 right:12px（占 12~38px），于是 × 直接压在「.docx」「.xlsx」和最后一个标签上。
+   门禁 `_v491` 只断言了"退出按钮在（可见可点）"，**没断言它不压字**，所以一直绿。
+   修法：给三条 chrome 行的右端留出 44px（12 右边距 + 26 按钮 + 6 间隙）。
+   用 padding-right 而不是给 .dg-exit 加底色 —— 加底色只是让它"看起来像个按钮"，
+   文字照样从底下穿过去。 */
+.word .dg-ribbon { padding-right:78px; }
+.code .dg-tabs { padding-right:78px; }
+.disguise-layer.shell.sheet .dg-ribbon { padding-right:78px; }
+/* 🟥 留出 44px 之后，窄窗下文件名/标签会**溢出到容器外面被硬切**（word 变成
+   「…工作周报（汇」这种断口，比压字更难看）。真实 Word/VS Code 的处理是**省略号截断**，
+   所以这里补三件：容器 overflow:hidden（裁在留白边界上）+ flex 项 min-width:0（允许收缩到
+   内容宽度以下，否则 ellipsis 永远不生效）+ 自身 nowrap/ellipsis。 */
+.word .dg-ribbon,
+.code .dg-tabs,
+.disguise-layer.shell.sheet .dg-ribbon { overflow:hidden; }
+.word .dg-ribbon .dg-docname,
+.disguise-layer.shell.sheet .dg-ribbon .dg-docname {
+  min-width:0; flex:0 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+/* 🟥 只让**文件名**去承担压缩，菜单项必须整体不换行。
+   漏了这条的后果实测：蓝条里变成竖排的「文/件 开/始 插/入」—— 因为 flex 默认允许收缩，
+   菜单 span 被压窄后中文就一个一个字折行，比原来的压字更像坏了。
+   `:not(.dg-docname)` 是为了不把上面给文件名准备的 flex:0 1 auto 覆盖掉。 */
+.word .dg-ribbon > span:not(.dg-docname),
+.disguise-layer.shell.sheet .dg-ribbon > span:not(.dg-docname) {
+  white-space:nowrap; flex:0 0 auto;
+}
+/* 🟥 code 皮肤是另一回事：标签栏**天生就宽于窗口**（8 个标签实测 scrollWidth=907 / 窗口 620），
+   flex 压不下去的部分照样铺进 padding 区 —— `overflow:hidden` 裁的是**边框盒**边界（x=620），
+   不是 padding 内容边界（x=576），所以 44px 留白对溢出内容**无效**
+   （诊断实测：退出键正下方命中的是 dg-tabs 的溢出部分）。
+   ⚠️ 别用 mask 渐隐：外壳层背景是透明的，mask 掉的像素会露出底下的浅色主题，
+   在右上角糊出一块白斑（试过，截图里就是一块亮斑）。
+   正确做法：在标签栏右端**盖一条与标签栏同色的渐隐条**，文字是"化进栏色里"而不是"透出底色"。 */
+.code .dg-tabs::after {
+  content:''; position:absolute; right:0; top:0; bottom:0; width:80px;
+  pointer-events:none; z-index:2;
+  background: linear-gradient(to right, rgba(37,37,38,0) 0, #252526 55%);
+}
+/* 标题栏要跟皮肤一起换色（下面每套皮肤各有一条），否则蓝条下面是深色鲸鱼风，一眼露馅 */
+body.dsg-read .title-bar { -webkit-app-region:drag; }
+/* 正文区上下不再被自有 chrome 挤占 */
+body.dsg-read #mainContent { padding:0 !important; }
+
+/* 🟥 V4.3.92b（主人：「左右两边是留空的……上下状态栏超出了阅读区，左右栏没有内容，结构非常奇怪」）
+   根因是**三层内衬叠出来的**，不是一处：
+     · `#app` 有 `padding: var(--win-pad)`（默认 20px）—— 这是给窗口投影/圆角留的透明边；
+     · `#mainContent` 还有 1px 边框 + `--r-window` 圆角 + 投影 —— 一张"卡片"；
+     · `.content-wrapper` 再 10px 内衬。
+   加起来白纸被套在 ~31px 的框里，而 `.dg-ribbon` / `.dg-status` 是 fixed 到**窗口边**（0~innerW），
+   于是蓝条/状态栏比纸每边宽 31px，中间那条就是"没有内容的左右栏"。
+   修法：伪装阅读态把这三层全部归零 —— 真 Word 窗口本来就没有卡片投影，纸就是窗口本身。
+   ⚠️ 改的是**内衬**不是纸色：底色仍然只有一个真源（#mainContent），见上面那段。 */
+body.dsg-read { --win-pad: 0px; }
+body.dsg-read #mainContent { border:0 !important; border-radius:0 !important; box-shadow:none !important; }
+/* ⚠️ 只归零**左右**，上下必须留给下面那条 `--dsg-pad-top/bottom` 规则 ——
+   写成 `padding:0 !important` 会把实测出来的 chrome 高度一起抹掉，
+   正文直接钻到蓝条/标尺底下（截图实测：第一行被切成半截）。 */
+body.dsg-read .content-wrapper { padding-left:0 !important; padding-right:0 !important; }
+
+/* 🖥 V4.3.87（主人：专注模式界面要跟当前皮肤颜色做适配）
+   专注模式下窗口没有标题栏、没有按钮，只剩正文 —— 这时"边框/提示色"是唯一还能体现
+   "我现在是哪个伪装皮肤"的地方。这里给三套皮肤各一条**极淡**的内描边：
+   存在感只够暗示边界，不会破坏沉浸，也不会在 Word 白纸上看出一条突兀的色带。
+   （拖动热区 #focusDragBar 本身是无色的，不在这里着色 —— 给它上色反而像一条多余的横条。） */
+body.dsg-read.dsg-word  #mainContent.focus-mode { box-shadow:inset 0 0 0 1px rgba(43,87,154,0.30) !important; }
+body.dsg-read.dsg-code  #mainContent.focus-mode { box-shadow:inset 0 0 0 1px rgba(70,74,80,0.55) !important; }
+body.dsg-read.dsg-sheet #mainContent.focus-mode { box-shadow:inset 0 0 0 1px rgba(33,115,70,0.30) !important; }
+/* 专注模式下的提示条也取皮肤主色，避免"Word 白纸 + 应用蓝提示条"的割裂感 */
+body.dsg-read.dsg-word  #hintToast { background:rgba(43,87,154,0.94); }
+body.dsg-read.dsg-code  #hintToast { background:rgba(50,50,50,0.95); }
+body.dsg-read.dsg-sheet #hintToast { background:rgba(33,115,70,0.94); }

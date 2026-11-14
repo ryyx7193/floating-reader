@@ -1,0 +1,550 @@
+        * { margin:0; padding:0; box-sizing:border-box; }
+        /* 中文小字号的虚糊感主要来自字形被取整后再栅格化：
+           geometricPrecision 让字形按小数尺寸渲染，边缘更准（比 optimizeLegibility 安全，
+           不会触发连字/字距计算拖慢长文）。font-synthesis 关掉伪粗体，避免中文字被描粗。 */
+        html, body { width:100%; height:100%; overflow:hidden; background:transparent; font-family:var(--ui-font); user-select:none;
+            -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; text-rendering:geometricPrecision; font-synthesis:none; }
+        :root {
+            --color-primary:#2b6cb0; --color-text:#24292e; --color-muted:#5b6671; --color-border:#d0d7de;
+            --surface-rgb:255 255 255; --surface-2-rgb:242 244 247; --surface-3-rgb:233 237 242;
+            --surface:rgb(var(--surface-rgb)); --surface-2:rgb(var(--surface-2-rgb)); --surface-3:rgb(var(--surface-3-rgb));
+            --surface-border:#dfe3e8;
+            /* 🛥 V4.3.86：描边也要跟随窗口透明度。原先 --surface-border 是固定色，
+               窗口透到 20% 时描边仍然完全不透明 —— 按钮看起来是“浮”在背景上。 */
+            --border-rgb:223 227 232;
+            --ui-border:rgb(var(--border-rgb) / var(--ui-alpha));
+            --font-base:14px; --line-height:1.75; --reading-font:'Microsoft YaHei UI','Microsoft YaHei','PingFang SC','Hiragino Sans GB','Segoe UI',sans-serif;
+            --ui-scale:1; --bg-r:240; --bg-g:242; --bg-b:245; --bg-alpha:1;
+            /* ⬜ V4.3.60：圆角与窗口几何令牌已移到 styles/radius.css（两窗共用一份真源）。 */
+            --ui-alpha:0.92; --track:rgba(127,127,127,0.30); --thumb-ring:rgba(255,255,255,0.92);
+            --text-shadow-strength:0;
+        }
+        /* ⬜ V4.3.60：内衬改由 --win-pad 控制（= 投影模糊/2 + 偏移 = 20px）。
+           原先写死 10px，而投影是 0 15px 30px（下方外扩约 30px）—— 投影被窗口边界裁掉一截。
+           ⚠️ 这圈内衬同时是**无边框窗口的边缘缩放热区**，不能为了投影把它缩成 0。 */
+        #app { position:relative; width:100%; height:100%; padding:var(--win-pad); }
+
+        /* 专注模式的系统级拖动条：贴窗口顶边 14px 高，透明不可见但可拖。
+           只有专注模式才出现；普通模式有标题栏，用不到它。 */
+        #focusDragBar { display:none; position:absolute; top:0; left:0; right:0; height:14px; -webkit-app-region:drag; z-index:45; }
+        #mainContent.focus-mode #focusDragBar { display:block; }
+
+        /* 主面板（悬浮窗口本体）
+           ⬜ V4.3.60 三处改动：
+           ① `border-radius` 改用 `--r-window`（随 --ui-scale 缩放）—— 原先固定 14px，
+              窗口缩到 0.82 倍时卡片缩了 18%、圆角一点没缩，相对弧度放大 22%；
+           ② 投影参数改用令牌，与 `--win-pad` 绑定（改投影忘了改内衬 = 投影被裁）；
+           ③ 加 `background-clip:padding-box`：背景不许渗到 1px 描边外，否则分数 DPR 下
+              圆角边缘会有一圈发灰的半透明像素。
+           🟥 描边仍然用 `border`（不是 inset 阴影）—— 「阴影+线条」滑杆会把它调到 4px，
+              那是**功能**（`applyShadow` 写内联 borderWidth），改成 inset 就等于把这个功能废掉。
+              `box-sizing:border-box` 已在 `*` 上全局设定，border 不会把卡片撑出窗口。
+           ⚠️ 这里的 box-shadow 只是**首帧默认值**：`applyShadow()` 会用内联样式接管，
+              它的最大值（blur 24 / offset 8）必须与 `--win-shadow-*` 对齐，否则内衬又不够 ——
+              门禁 `_v460_corner_gate.js` 核对这组数字。 */
+        #mainContent {
+            position:relative; width:100%; height:100%; display:flex; flex-direction:column;
+            background:rgba(var(--bg-r),var(--bg-g),var(--bg-b),var(--bg-alpha));
+            background-clip:padding-box;
+            border:1px solid rgba(120,130,145,0.18);
+            border-radius:var(--r-window); overflow:hidden;
+            box-shadow: 0 var(--win-shadow-y) var(--win-shadow-blur) rgba(0,0,0,0.20);
+            transition:background 0.15s ease;
+        }
+
+        /* 🖥 V4.3.53：真·全屏 —— 主进程已把窗口铺满整屏（setFullScreen），
+           但 #app 还留着 10px 内衬、卡片还带圆角/描边/投影，视觉上仍是
+           "一块浮在桌面上的卡片"，只能算"像全屏"（用户 2026-10-12 的原话）。
+           全屏时用 body.fs 把这些一并去掉，内容才真的铺到屏幕四边；
+           透明区没了，任务栏也不会从缝里露出来。 */
+        body.fs #app { padding:0; }
+        body.fs #mainContent { border-radius:0; box-shadow:none; }
+
+        /* 🧹 V4.3.89：#toolbarPanel / .toolbar-grid / .full-width 的样式已删 ——
+           这三个选择器在 index.html 里**已经一个元素都不存在**（V4.3.86 把内嵌抽屉从 HTML 真删了）。
+           留着只会让后来改样式的人以为自己改到了真东西上。 */
+
+        .btn {
+            height:var(--btn-h-lg); min-width:0; background:rgb(var(--surface-2-rgb) / var(--ui-alpha)); border:1px solid var(--ui-border);
+            border-radius:var(--r-md); cursor:pointer; display:flex; flex-direction:column; align-items:center;
+            justify-content:center; gap:2px; padding:3px 4px; color:var(--color-text); font-size:var(--fs-xs); width:100%;
+            overflow:hidden; white-space:nowrap; transition:background 0.15s ease, transform 0.05s ease;
+        }
+        .btn:hover { background:rgb(var(--surface-3-rgb) / var(--ui-alpha)); }
+        .btn:active { transform:scale(0.97); }
+        .btn .icon { font-size:var(--fs-lg); line-height:1; }
+        .btn .label { font-size:var(--fs-xs); color:var(--color-muted); max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .btn.active-btn, .btn.toggle-on { background:var(--color-primary); color:#fff; border-color:var(--color-primary); }
+        .btn.active-btn .label, .btn.toggle-on .label { color:rgba(255,255,255,0.85); }
+        /* 📑 V4.3.29：原「当前章已加书签金色高亮」整块删除 —— 主窗的 #bookmarkBtn 已从 index.html 移除，
+           书签状态改由「书签列表」面板显示（样式见 panel.css 的 .bookmark-actions / .bm-item）。 */
+        .btn.toggle-off { background:var(--surface-3); color:var(--color-muted); }
+
+        .slider-row { display:flex; align-items:center; gap:6px; padding:4px 0; }
+        .slider-icon { font-size:var(--fs-lg); width:22px; flex:none; text-align:center; }
+        .slider-col { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+        .slider-label { font-size:var(--fs-xs); color:var(--color-muted); text-align:center; }
+        .slider-value { font-size:var(--fs-xs); color:var(--color-muted); text-align:center; }
+        /* 滑块：规格与 panel.css 逐条一致（改这里必须同步那边，否则小窗会和主窗不一样）
+           加大命中区域，悬停/按下有反馈，避免「看不出抓没抓住」。 */
+        input[type="range"] { width:100%; height:22px; cursor:pointer; background:transparent; -webkit-appearance:none; appearance:none; }
+        input[type="range"]::-webkit-slider-runnable-track { height:5px; border-radius:var(--r-xs); background:var(--track); border:none; }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance:none; appearance:none; width:15px; height:15px; border-radius:50%;
+            background:var(--color-primary); border:2px solid var(--thumb-ring); margin-top:-5px;
+            box-shadow:0 1px 3px rgba(0,0,0,0.25);
+            transition:transform 0.1s ease, box-shadow 0.15s ease;
+        }
+        input[type="range"]:hover::-webkit-slider-thumb { transform:scale(1.12); }
+        input[type="range"]:active::-webkit-slider-thumb { transform:scale(1.22); }
+        input[type="range"]:focus { outline:none; }
+        input[type="range"]:focus::-webkit-slider-thumb { box-shadow:0 0 0 3px rgba(43,108,176,0.25); }
+        input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow:0 0 0 3px rgba(43,108,176,0.45); }
+        input[type="range"]:disabled { opacity:0.4; cursor:not-allowed; }
+        select, input[type="color"] { width:100%; height:30px; margin-top:4px; border:1px solid var(--ui-border); border-radius:var(--r-sm); background:rgb(var(--surface-2-rgb) / var(--ui-alpha)); color:var(--color-text); font-size:var(--fs-xs); padding:0 4px; }
+        input[type="color"] { padding:2px; cursor:pointer; }   /* 与 panel.css 一致（V4.3.33b 删掉了下面那条重复规则） */
+
+        /* 🧹 V4.3.89：.settings-panel / .drawer-head / .drawer-close / .setting-section / .setting-row /
+           .shortcut-input 全都已删 —— 它们只服务于 index.html 里那个**已被删的内嵌设置抽屉**，
+           现在一个元素都不存在。（`.switch` 保留 —— 它还在主窗里真的用着。） */
+        .switch { width:40px; height:22px; border-radius:var(--r-pill); background:var(--surface-3); cursor:pointer; position:relative; transition:background 0.15s ease; }
+        .switch .knob { position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:#fff; transition:left 0.15s ease; box-shadow:0 1px 2px rgba(0,0,0,0.25); }
+        .switch.active { background:var(--color-primary); }
+        .switch.active .knob { left:20px; }
+
+        /* 标题栏 */
+        .title-bar { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; -webkit-app-region:drag; flex-shrink:0; transition:background-color 0.3s ease; }
+        /* 🆕 V4.3.54（吸色联动）：跟随目标程序时，主进程采到的目标界面框架主色着在标题栏上。
+           0.26 的低透明度只做一层「风格膜」，文字对比度不受影响；变量由 app.js:applyCompanionTint 写入。 */
+        body.companion-tint .title-bar { background-color:rgba(var(--cmp-tint-r,240),var(--cmp-tint-g,242),var(--cmp-tint-b,245),0.26); }
+        /* 🟥 V4.3.93（主人：「WorkBuddy 是黑色的，阅读器却没变黑」）
+           旧实现只给标题栏叠了 26% 的色 —— 正文区一动不动，所以"目标黑、阅读器白"是必然结果。
+           现在按 --cmp-tint-mix（渲染层按目标色亮度算：暗 88% / 中 70% / 浅 45%）
+           把目标色混进 #mainContent 的**底色**。字色由 applyCompanionTint 同步反色。
+           ⚠️ 必须覆盖 background 而不是再叠一层半透明遮罩：遮罩会盖在文字上方，
+           而且会把"纸"变成一块有色玻璃（之前伪装皮肤就踩过这个观感坑）。 */
+        /* 🟥 V4.3.93：吸到深色时，标题栏里的文字/按钮必须一起反色（否则深底深字 = 一团黑） */
+        body.companion-tint-dark .title-bar .left > span,
+        body.companion-tint-dark .title-bar button { color:#f0f0f0; }
+        body.companion-tint-dark .title-bar button:hover { background:rgba(255,255,255,0.14); color:#fff; }
+        body.companion-tint-dark #titleText { color:#f0f0f0; }
+        body.companion-tint #mainContent {
+            background: color-mix(in srgb,
+                rgb(var(--cmp-tint-r,240) var(--cmp-tint-g,242) var(--cmp-tint-b,245)) var(--cmp-tint-mix,60%),
+                rgba(var(--bg-r),var(--bg-g),var(--bg-b),var(--bg-alpha)));
+        }
+        .title-bar .left { display:flex; align-items:center; gap:8px; min-width:0; }
+        /* 🛠 书架标签栏的开关锚点（V4.3.4）：点击「📖 阅读器」标题切换标签栏滑出/收起；
+           必须 no-drag，否则点击会被标题栏的拖拽区域吃掉 */
+        #titleText { -webkit-app-region:no-drag; cursor:pointer; }
+        /* 🆕 V4.3.92：标签栏的**可见入口**。原来只有「点标题文字」这一条路，标题上没有任何可点提示，
+           等于把多书切换做成了隐藏功能（视觉复核时开了 4 本书，标题栏里一个标签都看不见）。
+           这里在标题文字后面挂一个细箭头：只有书架 ≥2 本时才出现（一本没什么可切的）。
+           尺寸刻意比 .title-bar button 的 30×30 小一圈 —— 它是"标题的附属"，
+           跟右侧那排窗口按钮不是一个层级，做成同样大会显得标题栏有两个关闭键。 */
+        #titleText + #tabPeekBtn { width:calc(18px * var(--ui-scale)); height:calc(18px * var(--ui-scale)); border-radius:var(--r-sm); margin-left:-4px; }
+        #titleText + #tabPeekBtn svg { transition:transform 0.16s ease; }
+        #titleText + #tabPeekBtn.up svg { transform:rotate(180deg); }
+        #titleText + #tabPeekBtn[hidden] { display:none; }
+        .title-bar .right { display:flex; gap:4px; }
+        .title-bar .left > span { font-size:calc(13px * var(--ui-scale)); color:var(--color-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .title-bar button { -webkit-app-region:no-drag; background:transparent; border:none; font-size:calc(16px * var(--ui-scale)); cursor:pointer; width:calc(30px * var(--ui-scale)); height:calc(30px * var(--ui-scale)); border-radius:50%; color:var(--color-muted); display:flex; align-items:center; justify-content:center; padding:0; }
+        .title-bar button:hover { background:var(--surface-3); color:var(--color-text); }
+        /* 标题栏图标统一用线条 SVG：⊞ ❓ 这类字形图标在不同字体下的粗细、颜色（❓ 还会变红）
+           都不一致，换成同规格描边图标才成一套。
+           🎨 V4.3.56：尺寸 / 线宽 / 端点 / 填充**全部交给 styles/icons.css**（全项目一套），
+           这里只声明颜色跟随 —— 过去这里写死 stroke-width:1.5，与 24 格图标混用时线宽会差 1.5 倍。 */
+        .title-bar button svg { stroke:currentColor; }
+        /* 🖥 V4.3.53：全屏按钮的图标双态 —— 挂在 body.fs（onFullscreenChange 里 toggle）。
+           平时显示"四角外扩"（点它＝进全屏），全屏时显示"四角内收"（点它＝退出全屏）。
+           用 id 选择器保证特异性压过上面那条 `.title-bar button svg` 的 display:block。 */
+        #fullscreenBtn .ico-exit { display:none; }
+        body.fs #fullscreenBtn .ico-enter { display:none; }
+        body.fs #fullscreenBtn .ico-exit { display:block; }
+
+        /* 🐋 V4.3.53（R12-4）伴随模式顶栏入口 + 就地浮层 + 贴边暂停动作条。
+           几何：标题栏按钮一律 30×30（见上面 .title-bar button），.right 组 gap 4px，
+           🐋 插在「专注模式」左侧 ⇒ .right 从 4 个变 5 个按钮（132px → 166px），
+           标题栏是 flex + justify-content:space-between，左侧标题有 min-width:0 + ellipsis，
+           不会把标题挤出窗口。⚠️ 加标题栏按钮必须同步 smoke2 的 titleIcons 期望值（规则 6）。 */
+        /* 关＝灰+半透明；hover＝恢复；开＝主色 + 淡蓝底。
+           ⚠️ 图标跟其余按钮一样是线条 SVG（stroke:currentColor），所以"两态"改的是 color/opacity，
+           不是给字形图标加 grayscale 滤镜 —— main.css 顶部那条"统一用同规格描边图标"的约定要守住。 */
+        #companionBtn { opacity:0.62; transition:opacity 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease; }
+        #companionBtn:hover { opacity:1; }
+        #companionBtn.on { opacity:1; background:rgba(43,108,176,0.14); color:var(--color-primary); }
+        /* 贴边被用户拖走而暂停：加一圈琥珀色内描边，和"开着但没在贴"区分开 */
+        #companionBtn.paused { box-shadow:inset 0 0 0 1.5px #d98b00; }
+
+        #companionPop { position:fixed; z-index:80; display:none; width:238px; box-sizing:border-box;
+            background:rgb(var(--surface-rgb) / var(--ui-alpha)); border:1px solid var(--ui-border); border-radius:var(--r-xl);
+            box-shadow:0 10px 30px rgba(0,0,0,0.20); padding:8px;
+            /* 🆕 V4.3.94：加了分组与「当前配色」一行后会变高，小窗口里不能戳出屏外 —— 自己滚。
+               --win-pad=0（伪装态）时也不影响，按视口算。 */
+            max-height:calc(100vh - 68px); overflow-y:auto; }
+        /* 🟥 V4.3.94：上限必须比"内容自然高度"略宽一点。
+           原先 -76px 时 scrollHeight 349 / clientHeight 342，差 7px ——
+           肉眼看最后一行是完整的，但浮层已经处于"可滚"状态，滚动条会闪、滚轮一碰就跳。
+           -68px 时 bottom = 63+349 = 412 < 420，仍完整落在窗口内。 */
+        #companionPop.open { display:block; }
+        #companionPop::-webkit-scrollbar { width:4px; }
+        #companionPop::-webkit-scrollbar-thumb { background:rgba(120,130,145,0.35); border-radius:2px; }
+        /* 🆕 V4.3.94：分组标题 —— 一行小字 + 右侧细线，几乎不占高度但把 9 行分成四段。 */
+        #companionPop .cgt { display:flex; align-items:center; gap:8px; margin:3px 2px 2px;
+            font-size:calc(11px * var(--ui-scale)); color:var(--color-muted); letter-spacing:.5px; white-space:nowrap; }
+        #companionPop .cgt:first-child { margin-top:0; }
+        #companionPop .cgt::after { content:''; flex:1; height:1px; background:var(--ui-border); }
+        /* 🎨 V4.3.55 方案 B（紧凑分组卡）→ V4.3.94 改成**两列网格**：
+           标签列固定 84px、控件列吃掉剩余宽度 —— 之前 flex + space-between 让
+           开关/下拉/输入框各自按内容定宽，右缘参差；现在所有控件都靠右对齐在同一条竖线上。 */
+        #companionPop .crow { display:grid; grid-template-columns:84px minmax(0,1fr); align-items:center; gap:8px;
+            margin:0 0 2px; padding:4px 8px; box-sizing:border-box; border-radius:var(--r-md);
+            background:rgb(var(--surface-2-rgb) / var(--ui-alpha));
+            font-size:calc(12px * var(--ui-scale)); color:var(--color-text); }
+        #companionPop .crow:last-child { margin-bottom:0; }
+        #companionPop .crow > span { color:var(--color-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        #companionPop .cctrl { display:flex; align-items:center; justify-content:flex-end; gap:5px; min-width:0; }
+        #companionPop .cctrl > .switch,
+        #companionPop .cctrl > button,
+        #companionPop .cctrl > .ctsw { flex:none; }
+        #companionPop input[type="text"], #companionPop select { flex:1 1 auto; min-width:0; max-width:none; width:100%;
+            height:26px; margin-top:0; box-sizing:border-box;
+            border:1px solid var(--ui-border); border-radius:var(--r-sm); background:var(--surface);
+            color:var(--color-text); font-size:var(--fs-xs); padding:0 7px; }
+        #companionPop input[type="text"]:focus, #companionPop select:focus { outline:none; border-color:var(--color-primary); }
+        #companionPop button { height:26px; box-sizing:border-box; padding:3px 10px;
+            background:var(--surface); border:1px solid var(--color-primary);
+            border-radius:var(--r-sm); cursor:pointer; color:var(--color-primary); font-size:var(--fs-xs); }
+        #companionPop button:hover { background:rgba(43,108,176,0.14); }
+        #companionPop button:active { transform:scale(0.97); }
+        /* 🆕 V4.3.94：一行里要塞下「色块 + 开关 + 重置」，按钮必须收窄，否则会把标签挤没 */
+        #companionPop .mini-btn { padding:3px 7px; font-size:calc(11px * var(--ui-scale)); }
+        /* 🆕 V4.3.94：当前吸到的配色。没吸到时是斜纹（"空"），吸到后由 JS 写 inline background。 */
+        #companionPop .ctsw { width:18px; height:14px; box-sizing:border-box; border:1px solid var(--ui-border);
+            /* 🟥 圆角必须走令牌白名单（0 / 50% / 2px）—— 写 3px 会被 _v460 圆角门禁直接拦下。
+               改用 2px：既是小方块色块，又不破坏"全项目一套圆角"的不变式。 */
+            border-radius:2px; background:repeating-linear-gradient(45deg,
+                rgb(var(--surface-3-rgb) / 0.9) 0 4px, rgb(var(--surface-rgb) / 0.9) 4px 8px); }
+        /* 🎯 检测按钮：线条 SVG 准星（与标题栏"同规格描边图标"约定一致，stroke:currentColor 自动适配暗肤），
+           主色底提亮为主动作；替代原彩色 emoji —— emoji 与全窗线条图标语言冲突且暗肤下突兀。 */
+        #companionPop .icon-btn { flex:none; width:28px; padding:0; display:flex; align-items:center; justify-content:center;
+            background:rgba(43,108,176,0.14); border-color:var(--color-primary); color:var(--color-primary); }
+        #companionPop .icon-btn:hover { background:rgba(43,108,176,0.24); color:var(--color-primary); }
+        /* 🎨 V4.3.56：尺寸与线宽见 styles/icons.css，这里只留颜色（跟随父级 color） */
+        #companionPop .icon-btn svg { stroke:currentColor; }
+
+        #companionBar { display:none; align-items:center; gap:8px; padding:5px 10px; flex-shrink:0;
+            background:rgba(217,139,0,0.12); border-bottom:1px solid rgba(217,139,0,0.32);
+            font-size:calc(12px * var(--ui-scale)); color:var(--color-text); }
+        #companionBar.show { display:flex; }
+        #companionBar .sp { flex:1 1 auto; }
+        #companionBar button { padding:2px 9px; }
+        #companionBar select { max-width:104px; }
+        /* 专注模式整条标题栏是 display:none 的，动作条若也留着就成了"无主"的浮条 —— 一起藏。 */
+        #mainContent.focus-mode #companionBar { display:none; }
+
+        /* 阅读内容 */
+        /* 多书标签栏 */
+        /* 🛠 书架标签栏不常显（用户要求）：平时收起（max-height:0），点击「📖 阅读器」加 .peek 滑出，再点收起。
+           书多时滑出面板用双列网格 + 纵向滚动（最多约 4 行），书目不截断 */
+        .tab-bar { display:flex; align-items:center; gap:4px; padding:0 10px; max-height:0; overflow:hidden; flex-shrink:0; opacity:0; pointer-events:none; transition:max-height .18s ease, opacity .18s ease, padding .18s ease; }
+        .tab-bar.on.peek { max-height:122px; padding-bottom:6px; opacity:1; pointer-events:auto; overflow-x:hidden; overflow-y:auto; display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); align-content:start; }
+        .tab-bar.on.peek .tab { max-width:none; }
+        .tab-bar.on.peek .tab-add { width:auto; }
+        .tab-bar::-webkit-scrollbar { width:4px; height:4px; }
+        .tab-bar::-webkit-scrollbar-thumb { background:rgba(120,130,145,0.35); border-radius:var(--r-xs); }
+        .tab-bar::-webkit-scrollbar-track { background:transparent; }
+        .tab { display:flex; align-items:center; gap:6px; max-width:158px; padding:3px 9px; border-radius:var(--r-md); font-size:calc(11px * var(--ui-scale)); color:var(--color-muted); background:rgb(var(--surface-2-rgb) / var(--ui-alpha)); border:1px solid var(--ui-border); cursor:pointer; white-space:nowrap; overflow:hidden; flex-shrink:0; transition:color .15s ease, background .15s ease; }
+        .tab:hover { color:var(--color-text); }
+        .tab.active { color:#fff; background:var(--color-primary); border-color:var(--color-primary); }
+        .tab .t { overflow:hidden; text-overflow:ellipsis; }
+        /* 🎨 V4.3.63：关闭字符 ✕ → 线条图标；字号规则改成交替布局（尺寸走 icons.css） */
+        .tab .x { opacity:0.55; display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; }
+        .tab .x:hover { opacity:1; }
+        .tab-add { flex-shrink:0; width:28px; height:24px; border-radius:var(--r-md); border:1px dashed var(--ui-border); background:transparent; color:var(--color-muted); cursor:pointer; font-size:var(--fs-md); line-height:1; transition:color .15s ease, border-color .15s ease; }
+        .tab-add:hover { color:var(--color-text); border-color:var(--color-primary); }
+        #mainContent.focus-mode .tab-bar { display:none; }
+
+        /* 📖 V4.3.70：页边距（--page-margin，默认 0 = 与旧版逐像素一致）。
+           挂在 wrapper 而不是 .content 上：分栏容器的**内容盒宽度**必须等于视口宽，
+           否则"页宽 = 视口宽"这条就不成立，双栏步长会随 padding 漂。 */
+        .content-wrapper { flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; position:relative;
+            padding:calc(6px + var(--page-margin, 0px)) calc(10px + var(--page-margin, 0px)); }
+        .content {
+            flex:1; min-height:0; overflow-y:auto; font-size:var(--font-base); line-height:var(--line-height);
+            color:var(--color-text); font-family:var(--reading-font); white-space:pre-wrap; word-wrap:break-word;
+            padding-right:6px; width:100%;
+        }
+        .content .chunk { min-width:0; }
+        /* 🛠 标题栏自绘提示：水平居中于按钮正下方（原生 title 由系统按光标定位，中心无法与按钮重合）。
+           允许换行 + 限宽：贴边按钮由 JS 限宽让其换行，从而真正做到中心对齐 */
+        #titleTip { position:fixed; top:-999px; left:-999px; background:rgba(24,26,30,0.94); color:#eef1f5; font-size:var(--fs-sm); line-height:1.4; padding:6px 11px; border-radius:var(--r-sm); border:1px solid rgba(255,255,255,0.09); box-shadow:0 4px 14px rgba(0,0,0,0.3); white-space:normal; text-align:center; max-width:calc(100vw - 16px); opacity:0; pointer-events:none; z-index:var(--z-title-tip); transition:opacity 0.14s ease; }
+        #titleTip.show { opacity:1; }
+        /* 🖼 PDF 原样页：整页位图铺满窗宽，保持原版比例（不重排、不改样式） */
+        .pdf-page { display:block; width:100%; height:auto; margin:0 auto 8px; border-radius:var(--r-xs); user-select:none; }
+        .content * { line-height:inherit !important; }
+        mark.search-highlight { background:#f7d25c; color:#202124; border-radius:2px; }
+        /* 📖 V4.3.68：分页模式 —— 内容不再自由滚动，翻页由 JS 按页边界跳 scrollTop。
+           overflow 仍可编程写 scrollTop，所以位置记忆（scrollPositions）三档共用。 */
+        .content-wrapper.paged .content { overflow:hidden; }
+        /* 🖍 V4.3.71：批注高亮。四色 + 深色皮肤下压低不透明度（否则在深底上刺眼）。
+           注意不要给基础规则写 background —— 会把下面四条颜色规则盖掉。 */
+        .content mark.ann { border-radius:2px; padding:0 1px; cursor:pointer; }
+        .content mark.ann-yellow { background:rgba(247,210,92,0.55); }
+        .content mark.ann-green  { background:rgba(110,215,150,0.50); }
+        .content mark.ann-blue   { background:rgba(120,180,255,0.50); }
+        .content mark.ann-pink   { background:rgba(255,150,190,0.50); }
+        body.skin-dark .content mark.ann-yellow { background:rgba(247,210,92,0.34); }
+        body.skin-dark .content mark.ann-green  { background:rgba(110,215,150,0.30); }
+        body.skin-dark .content mark.ann-blue   { background:rgba(120,180,255,0.32); }
+        body.skin-dark .content mark.ann-pink   { background:rgba(255,150,190,0.30); }
+        .content mark.ann-flash { outline:2px solid var(--color-primary); outline-offset:1px; }
+        /* 批注浮层：深色底在任何皮肤下都用 —— 它是**临时操作层**，不是阅读面，
+           跟随皮肤会让"护眼豆沙绿"底上的浮层和正文糊成一片。 */
+        .annot-pop { position:absolute; z-index:var(--z-toast); display:none; flex-direction:column; gap:6px; padding:8px; width:250px;
+            background:rgba(24,26,30,0.96); color:#eef1f5; border:1px solid rgba(255,255,255,0.10);
+            border-radius:var(--r-sm); box-shadow:0 8px 24px rgba(0,0,0,0.35); -webkit-app-region:no-drag; }
+        .annot-pop.show { display:flex; }
+        .annot-pop .row { display:flex; align-items:center; gap:8px; }
+        .annot-pop .dot { width:16px; height:16px; border-radius:50%; border:1px solid rgba(255,255,255,0.35); cursor:pointer; padding:0; }
+        .annot-pop .dot-yellow { background:rgba(247,210,92,0.9); }
+        .annot-pop .dot-green  { background:rgba(110,215,150,0.9); }
+        .annot-pop .dot-blue   { background:rgba(120,180,255,0.9); }
+        .annot-pop .dot-pink   { background:rgba(255,150,190,0.9); }
+        .annot-pop .dot:hover { transform:scale(1.12); }
+        .annot-pop textarea { width:100%; resize:none; font-size:var(--fs-sm); line-height:1.4; padding:4px 6px; box-sizing:border-box;
+            background:rgba(255,255,255,0.08); color:#eef1f5; border:1px solid rgba(255,255,255,0.12); border-radius:var(--r-xs); }
+        .annot-pop .btns { display:flex; gap:6px; justify-content:flex-end; }
+        .annot-pop .btns button { font-size:var(--fs-xs); padding:3px 9px; border-radius:var(--r-xs); cursor:pointer;
+            border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.06); color:#eef1f5; }
+        .annot-pop .btns button:hover { background:rgba(255,255,255,0.14); }
+        .annot-pop .btns .danger { color:#ff8a8f; }
+        /* 🖍 V4.3.71：批注高亮。四色 + 深色皮肤下压低不透明度（否则在深底上刺眼）。
+           注意不要给基础规则写 background —— 会把下面四条颜色规则盖掉。 */
+        .content mark.ann { border-radius:2px; padding:0 1px; cursor:pointer; }
+        .content mark.ann-yellow { background:rgba(247,210,92,0.55); }
+        .content mark.ann-green  { background:rgba(110,215,150,0.50); }
+        .content mark.ann-blue   { background:rgba(120,180,255,0.50); }
+        .content mark.ann-pink   { background:rgba(255,150,190,0.50); }
+        body.skin-dark .content mark.ann-yellow { background:rgba(247,210,92,0.34); }
+        body.skin-dark .content mark.ann-green  { background:rgba(110,215,150,0.30); }
+        body.skin-dark .content mark.ann-blue   { background:rgba(120,180,255,0.32); }
+        body.skin-dark .content mark.ann-pink   { background:rgba(255,150,190,0.30); }
+        .content mark.ann-flash { outline:2px solid var(--color-primary); outline-offset:1px; }
+        /* 批注浮层：深色底在任何皮肤下都用 —— 它是**临时操作层**，不是阅读面，
+           跟随皮肤会让"护眼豆沙绿"底上的浮层和正文糊成一片。 */
+        .annot-pop { position:absolute; z-index:var(--z-toast); display:none; flex-direction:column; gap:6px; padding:8px; width:250px;
+            background:rgba(24,26,30,0.96); color:#eef1f5; border:1px solid rgba(255,255,255,0.10);
+            border-radius:var(--r-sm); box-shadow:0 8px 24px rgba(0,0,0,0.35); -webkit-app-region:no-drag; }
+        .annot-pop.show { display:flex; }
+        .annot-pop .row { display:flex; align-items:center; gap:8px; }
+        .annot-pop .dot { width:16px; height:16px; border-radius:50%; border:1px solid rgba(255,255,255,0.35); cursor:pointer; padding:0; }
+        .annot-pop .dot-yellow { background:rgba(247,210,92,0.9); }
+        .annot-pop .dot-green  { background:rgba(110,215,150,0.9); }
+        .annot-pop .dot-blue   { background:rgba(120,180,255,0.9); }
+        .annot-pop .dot-pink   { background:rgba(255,150,190,0.9); }
+        .annot-pop .dot:hover { transform:scale(1.12); }
+        .annot-pop textarea { width:100%; resize:none; font-size:var(--fs-sm); line-height:1.4; padding:4px 6px; box-sizing:border-box;
+            background:rgba(255,255,255,0.08); color:#eef1f5; border:1px solid rgba(255,255,255,0.12); border-radius:var(--r-xs); }
+        .annot-pop .btns { display:flex; gap:6px; justify-content:flex-end; }
+        .annot-pop .btns button { font-size:var(--fs-xs); padding:3px 9px; border-radius:var(--r-xs); cursor:pointer;
+            border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.06); color:#eef1f5; }
+        .annot-pop .btns button:hover { background:rgba(255,255,255,0.14); }
+        .annot-pop .btns .danger { color:#ff8a8f; }
+        /* 📖 V4.3.70：宽屏双栏 —— 一页两栏、横向翻页（scrollLeft）。
+           为什么用 CSS 分栏而不是"手动把正文切成两半"：分栏由浏览器做，只在**行与行之间**断开，
+           不需要逐行测量；切半则要自己算每栏的字符位置，还要处理标点避头尾。
+           `column-fill:auto` 要求容器有**确定高度**（.content 的 flex:1 + min-height:0 提供了），
+           否则浏览器会把内容均衡塞进两栏、高度塌成一半，横向溢出就消失了。
+           几何：栏宽 = (视口宽 − 栏距)/2 ⇒ 每页两栏的步长 = 视口宽 + 栏距（JS 侧同式，见 computePageOffsets）。 */
+        .content-wrapper.paged.two-col .content {
+            column-count:2; column-gap:var(--page-col-gap, 28px); column-fill:auto; overflow:hidden;
+        }
+        .content-wrapper.single-line .content {
+            flex:0 0 auto; overflow:hidden !important; white-space:nowrap !important; padding-right:0;
+            height:calc(30px * var(--ui-scale)); line-height:calc(30px * var(--ui-scale)); font-size:calc(16px * var(--ui-scale)); animation:scrollText 30s linear infinite;
+        }
+        @keyframes scrollText { 0%{transform:translateX(100%);} 100%{transform:translateX(-100%);} }
+
+        /* 底部状态栏 */
+        .footer { display:flex; align-items:center; gap:10px; padding:6px 12px; flex-shrink:0; }
+        .footer #statusText { font-size:calc(11px * var(--ui-scale)); color:var(--color-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:46%; }
+        .footer .mode-indicator { font-size:calc(11px * var(--ui-scale)); color:var(--color-muted); white-space:nowrap; }
+        .progress-bar { flex:1; height:4px; background:var(--surface-3); border-radius:var(--r-xs); overflow:hidden; cursor:pointer; }
+        .progress-bar .fill { height:100%; background:var(--color-primary); width:0; }
+
+        /* 底部按钮组 */
+        .btn-group { display:flex; justify-content:space-between; align-items:center; padding:6px 12px; flex-shrink:0; gap:8px; }
+        .btn-group .nav-group, .btn-group .action-group { display:flex; gap:4px; }
+        .btn-group button { background:transparent; border:none; padding:5px 10px; border-radius:var(--r-sm); cursor:pointer; color:var(--color-primary); font-size:calc(12px * var(--ui-scale)); }
+        .btn-group button:hover { background:var(--surface-3); }
+        .btn-group .danger-btn { color:#e5484d; }
+
+        /* 搜索条 */
+        .search-bar { display:none; position:absolute; top:14px; right:14px; background:var(--surface); border:1px solid var(--ui-border); border-radius:var(--r-md); padding:5px 8px; z-index:55; align-items:center; gap:6px; box-shadow:0 4px 16px rgba(0,0,0,0.14); }
+        .search-bar.active { display:flex; }
+        .search-bar input { border:none; outline:none; font-size:var(--fs-sm); width:140px; background:transparent; color:var(--color-text); }
+        .search-bar .count { font-size:var(--fs-xs); color:var(--color-muted); }
+        .search-bar button { background:none; border:none; cursor:pointer; color:var(--color-muted); }
+
+        /* 📑 V4.3.29：书签列表已从主窗浮层改为独立面板（见 panel.css），这里去掉 .bookmark-list 一组死样式 */
+        /* V4.3.33b：`.search-results-panel` 已从选择器里摘掉（无对应元素，全文搜索早已改成独立面板） */
+        .toc-panel {
+            display:none; position:absolute; background:var(--surface); border:1px solid var(--ui-border); border-radius:var(--r-lg);
+            padding:8px; box-shadow:0 6px 18px rgba(0,0,0,0.16); z-index:54; overflow-y:auto; font-size:var(--fs-sm); color:var(--color-text);
+        }
+        .toc-panel.open { display:block; top:56px; left:12px; width:min(240px, 70vw); max-height:72%; }
+        .toc-item { padding:7px 9px; border-radius:var(--r-sm); cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .toc-item:hover { background:var(--surface-2); }
+        .toc-item.active { background:var(--color-primary); color:#fff; }
+
+        /* 加载遮罩 */
+        .loading-overlay { display:none; position:absolute; inset:0; background:rgba(255,255,255,0.7); z-index:100; align-items:center; justify-content:center; flex-direction:column; gap:8px; }
+        .loading-overlay.active { display:flex; }
+        .spinner { width:30px; height:30px; border:3px solid var(--surface-3); border-top-color:var(--color-primary); border-radius:50%; animation:spin 1s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+
+        /* 快捷键帮助：外观与滚动条跟其它小窗统一，位置跟随主窗口（不再钉死屏幕中央）。
+           显隐用 opacity/visibility 过渡，不用 display 硬切（原来是 display:none/block，没有动画）。 */
+        /* 🟥 V4.3.96（清待办：420px 高的小窗里最后一行要滚动才看得到）
+           12 行 × (25px 行 + 8px 内边距) + 标题 + 上下 28px 内边距 ≈ 352px > 82vh(344px)。
+           收紧内边距与行距后 ≈ 318px，小窗也能一屏看全；大窗观感不变（只是更紧凑）。 */
+        .shortcut-help { position:absolute; top:44px; right:10px; z-index:200; min-width:270px; max-width:min(360px,86vw); max-height:calc(100vh - 52px); overflow:auto;
+            padding:6px 14px; background:rgb(var(--surface-rgb) / 0.96); border:1px solid var(--ui-border);
+            /* ⬜ V4.3.60：浮层用自己的 --r-float，不再借用窗口令牌（调窗口弧度不该连带改它） */
+            border-radius:var(--r-float); box-shadow:0 10px 30px rgba(0,0,0,0.22); color:var(--color-text); letter-spacing:0;
+            opacity:0; visibility:hidden; transform:translateY(-6px) scale(0.98); pointer-events:none;
+            transition:opacity 0.16s ease, transform 0.16s ease, visibility 0.16s; }
+        .shortcut-help.open { opacity:1; visibility:visible; transform:translateY(0) scale(1); pointer-events:auto; }
+        /* 滚动条跟主窗专注模式一致：3px 细条 + 半透明 thumb（V4.1.5 那次统一漏了这里） */
+        .shortcut-help::-webkit-scrollbar { width:3px; height:3px; }
+        .shortcut-help::-webkit-scrollbar-thumb { background:rgba(120,130,145,0.28); border-radius:2px; }
+        .shortcut-help::-webkit-scrollbar-track { background:transparent; }
+        .shortcut-help .title { text-align:center; font-size:13px; font-weight:600; margin-bottom:6px; letter-spacing:0; line-height:1.3; }
+        .shortcut-help .row { display:flex; justify-content:space-between; gap:14px; padding:1px 0; font-size:var(--fs-sm); letter-spacing:0; line-height:1.2; }
+        .shortcut-help .key { background:rgb(var(--surface-3-rgb) / var(--ui-alpha)); border:1px solid var(--ui-border); padding:0 6px; border-radius:var(--r-sm); font-family:var(--ui-font-mono); color:var(--color-muted); line-height:1.25; }
+
+        /* 拖拽提示 */
+        #dropZone { display:none; position:fixed; inset:0; background:rgba(43,108,176,0.12); border:3px dashed var(--color-primary); z-index:var(--z-title-tip); pointer-events:none; align-items:center; justify-content:center; font-size:22px; color:var(--color-primary); border-radius:var(--r-float); }
+        #dropZone.active { display:flex; }
+
+        /* 专注模式 */
+        #mainContent.focus-mode .title-bar,
+        #mainContent.focus-mode .footer,
+        #mainContent.focus-mode .btn-group { display:none; }
+
+        /* 滚动条（纤细、专注模式更隐蔽） */
+        .content::-webkit-scrollbar { width:8px; }
+        .content::-webkit-scrollbar-thumb { background:rgba(120,130,145,0.35); border-radius:var(--r-md); }
+        .content::-webkit-scrollbar-thumb:hover { background:rgba(120,130,145,0.6); }
+        .content::-webkit-scrollbar-track { background:transparent; }
+        #mainContent.focus-mode .content::-webkit-scrollbar { width:3px; }
+        #mainContent.focus-mode .content::-webkit-scrollbar-thumb { background:rgba(120,130,145,0.28); }
+
+        #customStyleContainer { display:none; }
+
+
+        /* 皮肤：只保留黑 / 白两种 */
+        body.skin-light #mainContent { --bg-r:245; --bg-g:246; --bg-b:248; }
+        body.skin-dark { --color-text:#e6e6e6; --color-muted:#a7b1bd; --surface-rgb:31 35 40; --surface-2-rgb:42 47 54; --surface-3-rgb:51 58 66; --surface-border:#3a424b; --border-rgb:58 66 75; --color-border:#3a424b; --track:rgba(160,170,182,0.30); --thumb-ring:rgba(24,26,30,0.92); }
+        body.skin-dark #mainContent { --bg-r:24; --bg-g:26; --bg-b:30; }
+        body.skin-dark .btn { color:var(--color-text); }
+
+        /* 透明度降低时提升文字对比，让文字相对更醒目 */
+        .content { text-shadow:0 0 calc(1px * var(--text-shadow-strength)) rgba(0,0,0,calc(0.30 * var(--text-shadow-strength))); }
+        body.skin-dark .content { text-shadow:0 0 calc(1px * var(--text-shadow-strength)) rgba(255,255,255,calc(0.22 * var(--text-shadow-strength))); }
+
+        /* 吸色取样点：窗口内一个明确的点，标明当前（或即将）吸取的颜色 */
+        /* 取样点：只留左边那个圆的色块，不带色值(#FFF)和「取样点」文字（用户要求）。
+           外层不再做胶囊底，只留圆点本身；白描边 + 外圈暗影保证在任何背景上都看得清。 */
+        /* 🎨 V4.3.86：取色圆点重做 —— 原来就是一个 16px 白圈，看不出“它在采哪里”。
+           现在：实色内核 + 白环 + 外晕圈，底下一个**向下小箭头**明确指出
+           “采样点就在这个点正下方（窗口外 12px）”—— 这正是主人问的“判定点是不是一致”。
+           可拖动：.on 时 pointer-events 才开放，光标 grab/grabbing。 */
+        #pickPreview { display:none; position:fixed; z-index:var(--z-pick); pointer-events:none; transform:translate(-50%,-50%); align-items:center; justify-content:center; }
+        #pickPreview.on { display:flex; pointer-events:auto; cursor:grab; }
+        #pickPreview.dragging { cursor:grabbing; }
+        #pickPreview .swatch { position:relative; flex:0 0 auto; width:18px; height:18px; border-radius:50%; border:2px solid #fff;
+            box-shadow:0 0 0 1px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.4); background:#888; }
+        #pickPreview .swatch::after { content:''; display:block; width:100%; height:100%; border-radius:50%; box-shadow:inset 0 0 0 1px rgba(0,0,0,0.28); }
+        /* 外晕圈：一层薄白圈 + 一层暗边，保证在浅色和深色桌面上都看得清 */
+        #pickPreview.on::before { content:''; position:absolute; inset:-7px; border-radius:50%;
+            border:1px solid rgba(255,255,255,0.55); box-shadow:0 0 0 1px rgba(0,0,0,0.22); }
+        /* 向下小箭头：采样点在圆点正下方 */
+        #pickPreview.on::after { content:''; position:absolute; left:50%; top:calc(100% + 3px); transform:translateX(-50%);
+            width:0; height:0; border-left:4px solid transparent; border-right:4px solid transparent;
+            border-top:6px solid rgba(255,255,255,0.92); filter:drop-shadow(0 1px 1px rgba(0,0,0,0.55)); }
+        #pickPreview .hex, #pickPreview .tag { display:none; }
+
+        /* 抓取失败章节提示条 */
+        #failedBar { display:none; align-items:center; justify-content:space-between; gap:8px; padding:5px 12px; background:rgba(224,58,58,0.12); border-bottom:1px solid rgba(224,58,58,0.35); font-size:calc(11px * var(--ui-scale)); color:var(--color-text); }
+        #failedBar.on { display:flex; }
+        #failedBar button { background:var(--color-primary); color:#fff; border:none; border-radius:var(--r-sm); padding:3px 10px; cursor:pointer; font-size:calc(11px * var(--ui-scale)); }
+        #failedBar button:disabled { opacity:0.6; cursor:default; }
+
+        /* 口令输入弹窗（导出加密 / 导入解密） */
+        #pwdModal { display:none; position:fixed; inset:0; z-index:var(--z-modal); align-items:center; justify-content:center; background:rgba(0,0,0,0.35); }
+        #pwdModal.open { display:flex; }
+        #pwdModal .pwd-box { width:min(320px, 86vw); background:rgb(var(--surface-rgb) / var(--ui-alpha)); border:1px solid var(--ui-border); border-radius:var(--r-xl); box-shadow:0 12px 34px rgba(0,0,0,0.35); padding:14px; display:flex; flex-direction:column; gap:8px; }
+        #pwdModal .pwd-title { font-size:var(--fs-md); font-weight:600; color:var(--color-text); }
+        #pwdModal .pwd-hint { font-size:var(--fs-xs); color:var(--color-muted); line-height:1.5; }
+        #pwdModal input { height:30px; border:1px solid var(--ui-border); border-radius:var(--r-sm); background:rgb(var(--surface-2-rgb) / var(--ui-alpha)); color:var(--color-text); font-size:var(--fs-sm); padding:0 8px; outline:none; }
+        #pwdModal input:focus { border-color:var(--color-primary); }
+        #pwdModal .pwd-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:2px; }
+        #pwdModal .pwd-actions button { border:1px solid var(--ui-border); background:rgb(var(--surface-2-rgb) / var(--ui-alpha)); color:var(--color-text); border-radius:var(--r-sm); padding:4px 12px; cursor:pointer; font-size:var(--fs-sm); }
+        #pwdModal #pwdOk { background:var(--color-primary); border-color:var(--color-primary); color:#fff; }
+
+        /* 单行模式禁用态 */
+        .slider-row.disabled { opacity:0.45; }
+        .slider-row.disabled input[type="range"] { cursor:not-allowed; }
+
+        /* 窗口右下角缩放把手 */
+        .resize-grip { position:absolute; right:7px; bottom:7px; width:18px; height:18px; z-index:95; cursor:nwse-resize; background:linear-gradient(135deg, transparent 52%, rgba(120,130,145,0.55) 52%); border-bottom-right-radius:12px; }
+
+        /* 轻提示 */
+        .hint-toast { position:fixed; left:50%; bottom:18px; transform:translateX(-50%) translateY(20px); background:rgba(20,22,26,0.92); color:#fff; padding:8px 14px; border-radius:var(--r-md); font-size:var(--fs-sm); z-index:var(--z-menu); opacity:0; pointer-events:none; transition:opacity 0.2s ease, transform 0.2s ease; max-width:86vw; text-align:center; }
+        .hint-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+        /* 🟥 V4.3.22 警告态：用于「脱离监控没生效」这类必须被看见的信息 */
+        .hint-toast.warn { background:rgba(158,26,26,0.96); color:#fff; border:1px solid rgba(255,130,130,0.6); font-weight:600; }
+        /* 🆕 V4.3.23 提醒态（琥珀）：用于「测不出来 / 不确定」—— 与"确实失效"的红分开，
+           免得把「不知道」也渲染成「已经没救」，那是另一种误导。 */
+        .hint-toast.note { background:rgba(140,88,10,0.96); color:#fff; border:1px solid rgba(255,200,120,0.55); }
+        /* 取样点停在窗口下沿时，提示条上移，避免和取样点叠在一起 */
+        .hint-toast.lifted { bottom:56px; }
+
+        /* 原 V4.0 分窗遗留的隐藏墓碑（#toolbarPanel / .settings-panel / .toc-panel）
+           已随 scripts/app.js 顶部的运行时摘除一起移除：这三块内嵌面板不再存在于主窗 DOM，
+           功能全部走 panel.html 的独立小窗。这里不再需要 display:none 兜底。 */
+
+        /* ===== V4.0.0 界面打磨：焦点可见、过渡统一、字距归零 ===== */
+        :focus { outline:none; }
+        :focus-visible { outline:2px solid var(--color-primary); outline-offset:1px; }
+        .btn, .tab, .tab-add, .title-bar button, .drawer-close, .setting-row button, .btn-group button {
+            transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.06s ease;
+        }
+        .btn:active, .tab-add:active { transform:scale(0.985); }
+        .content, .footer #statusText, .title-bar .left > span { letter-spacing:0; }
+        .title-bar .left > span { font-weight:600; }
+        .hint-toast { backdrop-filter:blur(2px); }
+        .empty, .hint { line-height:1.6; }
+        @media (prefers-reduced-motion: reduce) {
+            * { transition:none !important; animation:none !important; }
+        }
+
+        /* ===== 窗口拖动中：临时关掉昂贵合成效果 =====
+           半透明无边框窗口移动时，backdrop-filter、大面积 box-shadow、过渡动画
+           会让 Windows 的 DWM 掉帧，并在旧位置留下拖影（专注模式左键直接拖最明显）。
+           拖动期间由 app.js 给 <body> 挂 .dragging，松手立即移除。
+           #mainContent 自身带的 box-shadow(34px 模糊) 面积最大，是拖影主因。 */
+        body.dragging * { transition:none !important; }
+        body.dragging .hint-toast { backdrop-filter:none !important; }
+        /* ⬜ V4.3.60：原先拖动期直接把投影删掉 —— 一拖就变平、松手又鼓起来。
+           改成**降级**：小 blur 的投影栅格化便宜得多，同时保住悬浮层次。 */
+        body.dragging #mainContent { box-shadow: 0 4px 10px rgba(0,0,0,0.18) !important; }
+
+/* 🖋 V4.3.87：楷书族（楷体/行楷/华文楷体…）笔画细，两处会让它"发虚"：
+   ① 窗口越透明，applyWindowOpacity 越会加强 --text-shadow-strength 的阴影 —— 细笔画叠阴影就糊；
+   ② 默认字距下细笔画容易粘连。
+   所以楷体下：关掉阴影 + 字距微松 0.02em。其它字体完全不受影响。 */
+.content.font-kai { letter-spacing:0.02em; }
+.content.font-kai, .content.font-kai * { text-shadow:none !important; }

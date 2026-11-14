@@ -1,0 +1,406 @@
+﻿<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<!-- 🛡 V4.3.35 内容安全策略。面板不加载 vendor 库，所以这里可以更严：不留 'unsafe-eval'。 -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; media-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+<title data-i18n="浅水鲸面板">浅水鲸面板</title>
+<link rel="stylesheet" href="./styles/tokens.css">
+    <link rel="stylesheet" href="./styles/radius.css">
+<link rel="stylesheet" href="./styles/icons.css">
+<link rel="stylesheet" href="./styles/panel.css">
+</head>
+<body>
+  <div id="panel">
+    <div id="view-toolbar" class="view">
+      <div class="head"><span class="head-main"><svg class="ico" data-ico="sliders" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h4M12 17h8"/><circle cx="15" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span class="title" data-i18n="工具栏">工具栏</span></span><button class="x" data-close="1" title="关闭" data-i18n-title="关闭"><svg class="ico" data-ico="close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="body">
+        <div class="grid">
+          <button class="btn" data-a="fontDec"><svg class="icon ico" data-ico="type-minus" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.2 18.5L8.6 6l5.4 12.5M5.2 14.2h6.8"/><path d="M16.5 12h5"/></svg><span class="label" data-i18n="缩小">缩小</span></button>
+          <button class="btn" data-a="fontInc"><svg class="icon ico" data-ico="type-plus" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.2 18.5L8.6 6l5.4 12.5M5.2 14.2h6.8"/><path d="M16.5 12h5M19 9.5v5"/></svg><span class="label" data-i18n="放大">放大</span></button>
+          <button class="btn" data-a="fontReset"><svg class="icon ico" data-ico="reset" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 1 2.6 5.7"/><path d="M4 8v4.5h4.5"/></svg><span class="label" data-i18n="重置">重置</span></button>
+          <button class="btn" id="modeToggleBtn" data-a="modeToggle"><svg class="icon ico" data-ico="text-lines" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h16M4 12h11M4 17.5h7"/></svg><span class="label" data-i18n="单行">单行</span></button>
+          <button class="btn" id="pagedToggleBtn" data-a="pagedToggle"><svg class="icon ico" data-ico="book" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4.5h6.2A2.8 2.8 0 0 1 13 7.3v12a2.2 2.2 0 0 0-2.2-2.2H4z"/><path d="M20 4.5h-6.2A2.8 2.8 0 0 0 11 7.3v12a2.2 2.2 0 0 1 2.2-2.2H20z"/></svg><span class="label" data-i18n="分页">分页</span></button>
+          <button class="btn" data-a="skin"><svg class="icon ico" data-ico="palette" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 0 0 0 17c1.4 0 2-.9 2-1.9 0-1.5-1.3-1.7-1.3-2.9 0-.9.8-1.6 1.8-1.6h1.8a3.7 3.7 0 0 0 3.7-3.7c0-3.8-3.6-6.9-8-6.9z"/><circle cx="8.2" cy="10" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="7.6" r="1.1" fill="currentColor" stroke="none"/><circle cx="15.9" cy="10.2" r="1.1" fill="currentColor" stroke="none"/></svg><span class="label" data-i18n="皮肤">皮肤</span></button>
+          <select id="fontSelect" class="full">
+            <option value="'Consolas', 'Microsoft YaHei', monospace" data-i18n="默认等宽">默认等宽</option>
+            <option value="'Microsoft YaHei', '微软雅黑', sans-serif" data-i18n="微软雅黑">微软雅黑</option>
+            <option value="'SimSun', '宋体', serif" data-i18n="宋体">宋体</option>
+            <option value="'SimHei', '黑体', sans-serif" data-i18n="黑体">黑体</option>
+            <option value="'KaiTi', '楷体', serif" data-i18n="楷体">楷体</option>
+            <!-- 🆕 V4.3.87（主人：多加几种楷体）：都是系统自带或免费可商用的楷书族。
+                 全部写成字体栈 —— 没装就回退，不会变方框。 -->
+            <option value="'STKaiti', '华文楷体', 'KaiTi', serif" data-i18n="华文楷体">华文楷体</option>
+            <option value="'KaiTi_GB2312', '楷体_GB2312', 'KaiTi', serif" data-i18n="楷体 GB2312">楷体 GB2312</option>
+            <option value="'FZKai-Z03', '方正楷体', 'FZKai', 'KaiTi', serif" data-i18n="方正楷体">方正楷体</option>
+            <option value="'HYKaishu', '汉仪楷体', 'KaiTi', serif" data-i18n="汉仪楷体">汉仪楷体</option>
+            <option value="'STXingkai', '华文行楷', 'KaiTi', serif" data-i18n="华文行楷">华文行楷</option>
+            <option value="'FangSong', '仿宋', serif" data-i18n="仿宋">仿宋</option>
+            <option value="'YouYuan', '幼圆', sans-serif" data-i18n="幼圆">幼圆</option>
+            <option value="'DengXian', '等线', sans-serif" data-i18n="等线">等线</option>
+            <option value="'Source Han Sans SC', 'Noto Sans SC', '思源黑体', sans-serif" data-i18n="思源黑体">思源黑体</option>
+            <option value="'Source Han Serif SC', 'Noto Serif SC', '思源宋体', serif" data-i18n="思源宋体">思源宋体</option>
+            <option value="'STZhongsong', '华文中宋', serif" data-i18n="华文中宋">华文中宋</option>
+            <option value="'LXGW WenKai', '霞鹜文楷', 'KaiTi', serif" data-i18n="霞鹜文楷">霞鹜文楷</option>
+            <!-- 🆕 V4.3.86（主人：多加点流行字体）：下面这些大多是**免费可商用**或系统自带的现代中文字体。
+                 装了就生效，没装则按字体栈自动回退到后面的备选，不会变成方框。 -->
+            <option value="'PingFang SC', '苹方-简', 'Microsoft YaHei', sans-serif" data-i18n="苹方">苹方</option>
+            <option value="'HarmonyOS Sans SC', 'HarmonyOS Sans', 'Microsoft YaHei', sans-serif" data-i18n="鸿蒙黑体">鸿蒙黑体</option>
+            <option value="'MiSans', 'MiSans VF', 'Microsoft YaHei', sans-serif" data-i18n="小米 MiSans">小米 MiSans</option>
+            <option value="'Alibaba PuHuiTi', 'Alibaba PuHuiTi 2.0', 'Microsoft YaHei', sans-serif" data-i18n="阿里普惠体">阿里普惠体</option>
+            <option value="'Smiley Sans', '得意黑', 'Microsoft YaHei', sans-serif" data-i18n="得意黑">得意黑</option>
+            <option value="'Sarasa Gothic SC', '更纱黑体 SC', 'Microsoft YaHei', sans-serif" data-i18n="更纱黑体">更纱黑体</option>
+            <option value="'Microsoft JhengHei', '微軟正黑體', 'Microsoft YaHei', sans-serif" data-i18n="微软正黑">微软正黑</option>
+            <option value="'Noto Sans SC', '思源黑体 CN', 'Microsoft YaHei', sans-serif" data-i18n="Noto 黑体">Noto 黑体</option>
+            <option value="'Georgia', 'Times New Roman', serif" data-i18n="衬线英文">衬线英文</option>
+            <option value="'Segoe UI', 'Microsoft YaHei', sans-serif" data-i18n="无衬线">无衬线</option>
+          </select>
+          <!-- 🎨 V4.3.86（主人：优化文字颜色选择按钮跟重置按钮的样式与布局）：
+               原来是「一条满宽的色块 + 一条满宽的重置按钮」，两行都占满宽度、很笨重。
+               现在并成一行：左边圆形色点（原生 input 直接做成圆片）+ 文字标签，右边紧凑的重置按钮。 -->
+          <div class="color-row full">
+            <label class="color-chip" title="文字颜色" data-i18n-title="文字颜色">
+              <input type="color" id="textColorPicker">
+              <span class="color-label" data-i18n="文字颜色">文字颜色</span>
+            </label>
+            <button class="mini-btn" data-a="resetColor" title="重置颜色" data-i18n-title="重置颜色"><svg class="icon ico" data-ico="reset" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 1 2.6 5.7"/><path d="M4 8v4.5h4.5"/></svg></button>
+          </div>
+
+          <div class="row full"><svg class="ic ico" data-ico="droplet" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3.2 4 5.5 6.4 5.5 9.2a5.5 5.5 0 0 1-11 0c0-2.8 2.3-5.2 5.5-9.2z"/></svg><div class="col"><span class="lab" data-i18n="文字透明度">文字透明度</span><input type="range" id="textOpacitySlider" min="0" max="90"><span class="val" id="textOpacityValue">0%</span></div></div>
+          <div class="row full"><svg class="ic ico" data-ico="window" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9h17"/></svg><div class="col"><span class="lab" data-i18n="窗口透明度">窗口透明度</span><input type="range" id="windowOpacitySlider" min="0" max="80"><span class="val" id="windowOpacityValue">0%</span></div></div>
+          <div class="row full"><svg class="ic ico" data-ico="contrast" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 0 0 17z" fill="currentColor" stroke="none"/></svg><div class="col"><span class="lab" data-i18n="阴影+线条">阴影+线条</span><input type="range" id="shadowIntensitySlider" min="0" max="100"><span class="val" id="shadowIntensityValue">50%</span></div></div>
+          <div class="row full"><svg class="ic ico" data-ico="ruler" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="8.5" width="17" height="7" rx="1.2"/><path d="M7.5 8.5v3M11 8.5v4.5M14.5 8.5v3M18 8.5v4.5"/></svg><div class="col"><span class="lab" data-i18n="行距">行距</span><input type="range" id="lineHeightSlider" min="1.5" max="4.5" step="0.1"><span class="val" id="lineHeightValue">1.6</span></div></div>
+          <!-- 📖 V4.3.70：页边距（正文四周留白）。图标先写占位 span，由 _ico_gen.js --write 生成真 SVG。 -->
+          <div class="row full" id="pageMarginRow"><svg class="ic ico" data-ico="columns" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M8 4.5v15M16 4.5v15"/></svg><div class="col"><span class="lab" data-i18n="页边距">页边距</span><input type="range" id="pageMarginSlider" min="0" max="48" step="2"><span class="val" id="pageMarginValue">0px</span></div></div>
+          <div class="row full" id="autoScrollRow"><svg class="ic ico" data-ico="gauge" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18a9 9 0 1 1 16 0"/><path d="M12 18l4.5-5"/></svg><div class="col"><span class="lab" data-i18n="自动滚动速度（单行）">自动滚动速度（单行）</span><input type="range" id="autoScrollSpeed" min="0" max="100"><span class="val" id="autoScrollSpeedValue" data-i18n="关">关</span></div></div>
+
+          <button class="btn" id="pickerBtn" data-a="picker"><svg class="icon ico" data-ico="eyedropper" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 3.9a2.3 2.3 0 0 1 3.3 0l1.3 1.3a2.3 2.3 0 0 1 0 3.3l-8.6 8.6-4.9 1.3 1.3-4.9z"/><path d="M13.5 5.9l4.6 4.6"/></svg><span class="label" data-i18n="吸色">吸色</span></button>
+          <button class="btn" id="pickResetBtn" data-a="pickReset"><svg class="icon ico" data-ico="reset" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 1 2.6 5.7"/><path d="M4 8v4.5h4.5"/></svg><span class="label" data-i18n="重置吸色">重置吸色</span></button>
+          <button class="btn" id="grayToggleBtn" data-a="gray"><svg class="icon ico" data-ico="bolt" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2.5L5 13.5h5.5L10 21.5l8-11h-5.5z"/></svg><span class="label" data-i18n="变灰">变灰</span></button>
+          <button class="btn" id="ttsBtn" data-a="ttsToggle"><svg class="icon ico" data-ico="volume" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6"/><path d="M18 6.5a7.8 7.8 0 0 1 0 11"/></svg><span class="label" data-i18n="朗读">朗读</span></button>
+          <!-- 📑 V4.3.29：原来这里有个独立的「书签」按钮（data-a="bookmark"），现按用户要求撤销 ——
+               「加/移除书签」这件事收进「书签列表」面板里统一干，并另给它配了一个可改键的快捷键。 -->
+          <button class="btn" data-a="bookmarks"><svg class="icon ico" data-ico="bookmark" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5h10v16l-5-3.6-5 3.6z"/></svg><span class="label" data-i18n="书签列表">书签列表</span></button>
+          <!-- V4.3.26：原「目录」按钮已移除 —— 目录改由书架卡片右侧的「📑 目录」卡与快捷键 Ctrl+Shift+G 打开 -->
+          <button class="btn" data-a="shelf"><svg class="icon ico" data-ico="book" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4.5h6.2A2.8 2.8 0 0 1 13 7.3v12a2.2 2.2 0 0 0-2.2-2.2H4z"/><path d="M20 4.5h-6.2A2.8 2.8 0 0 0 11 7.3v12a2.2 2.2 0 0 1 2.2-2.2H20z"/></svg><span class="label" data-i18n="书架">书架</span></button>
+          <!-- 🛡 脱离监控总开关（V4.3.19）：与吸色/变灰同为一组按钮卡；默认开启（亮起）。
+               开启 = 防截屏（截屏/录屏抓到黑屏）+ 投屏/远控时自动隐身；也可用 Ctrl+Shift+S 切换。 -->
+          <button class="btn" id="protectBtn" data-a="contentProtect"><svg class="icon ico" data-ico="shield" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2l7 2.6v5.4c0 4.3-2.9 7.5-7 9.2-4.1-1.7-7-4.9-7-9.2V5.8z"/></svg><span class="label" data-i18n="脱监">脱监</span></button>
+          <!-- 🆘 SOS（V4.3.24）：一键收起**全部**界面（阅读主窗 + 所有小窗）并停掉朗读；
+               再按一次原样恢复。与 Ctrl+Shift+H 不同 —— H 只藏阅读窗口，工具栏还在。 -->
+          <button class="btn full" id="sosBtn" data-a="sos"><svg class="icon ico" data-ico="lifebuoy" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><circle cx="12" cy="12" r="3.4"/><path d="M6 6l3.4 3.4M18 6l-3.4 3.4M18 18l-3.4-3.4M6 18l3.4-3.4"/></svg><span class="label">SOS</span></button>
+          <!-- 伪装：从设置面板移出，放在「设置」按钮上面 —— 选皮肤 + 一键进入/退出 -->
+          <div class="full" id="disguiseQuick" style="border:1px solid var(--surface-border); border-radius:8px; padding:6px 8px; background:rgb(var(--surface-2-rgb) / var(--ui-alpha));">
+            <div class="srow"><span data-i18n="伪装皮肤">伪装皮肤</span><select id="disguiseSkinSelect" style="width:150px; max-width:100%;"><option value="word" data-i18n="办公文档">办公文档</option><option value="code" data-i18n="代码 / 终端">代码 / 终端</option><option value="sheet" data-i18n="数据表格">数据表格</option></select></div>
+            <div class="srow"><span></span><div><button id="disguiseToggleBtn" data-a="disguise" data-i18n="进入伪装">进入伪装</button></div></div>
+            <!-- 🆕 V4.3.86：把伪装皮肤当**可阅读的常驻皮肤**用 —— 与上面的「进入伪装」（全窗遮罩、
+                 盖住真正文、按键全吞）是两件事。开了这个：正文按假文档外观渲染，能正常滚动/翻页/选中，
+                 标题与托盘名也一起伪装，且重启后保持。按钮文案由 updateToolbar 按状态刷新（走 PT，
+                 不能用 data-i18n —— 那是静态文案，会被切语言覆盖成"开启"）。 -->
+            <div class="srow"><span data-i18n="伪装外观常驻">伪装外观常驻</span><div><button id="disguiseReadBtn" data-a="disguiseRead" data-i18n="开启">开启</button></div></div>
+          </div>
+          <button class="btn full" data-a="settings"><svg class="icon ico" data-ico="settings" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="label" data-i18n="设置">设置</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-settings" class="view">
+      <div class="head"><span class="head-main"><svg class="ico" data-ico="settings" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="title" data-i18n="设置">设置</span></span><button class="x" data-close="1" title="关闭" data-i18n-title="关闭"><svg class="ico" data-ico="close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="body">
+        <div class="section">
+          <h3 data-i18n="外观">外观</h3>
+          <div class="srow"><span data-i18n="移出延迟关闭">移出延迟关闭</span><input type="range" id="closeDelaySlider" min="0" max="3000" style="width:130px;"><span id="closeDelayValue" style="color:var(--color-muted);font-size:11px;">1500ms</span></div>
+          <div class="srow"><span data-i18n="自动对比度">自动对比度</span><div class="switch" id="autoContrastSwitch"><div class="knob"></div></div></div>
+        </div>
+        <div class="section">
+          <h3 data-i18n="快捷键">快捷键</h3>
+          <div class="srow"><span data-i18n="上一章">上一章</span><input type="text" class="shortcut-input" id="shortcutPrev" readonly></div>
+          <div class="srow"><span data-i18n="下一章">下一章</span><input type="text" class="shortcut-input" id="shortcutNext" readonly></div>
+          <div class="srow"><span data-i18n="隐藏/显示">隐藏/显示</span><input type="text" class="shortcut-input" id="shortcutHide" readonly></div>
+          <div class="srow"><span data-i18n="专注模式">专注模式</span><input type="text" class="shortcut-input" id="shortcutFocus" readonly></div>
+          <div class="srow"><span data-i18n="当前章搜索">当前章搜索</span><input type="text" class="shortcut-input" id="shortcutSearch" readonly></div>
+          <div class="srow"><span data-i18n="全文搜索">全文搜索</span><input type="text" class="shortcut-input" id="shortcutGlobalSearch" readonly></div>
+          <div class="srow"><span data-i18n="自动滚动">自动滚动</span><input type="text" class="shortcut-input" id="shortcutAutoScroll" readonly></div>
+          <div class="srow"><span data-i18n="取色点">取色点</span><input type="text" class="shortcut-input" id="shortcutPickPoint" readonly></div>
+          <div class="srow"><span data-i18n="工具栏">工具栏</span><input type="text" class="shortcut-input" id="shortcutToolbar" readonly></div>
+          <div class="srow"><span data-i18n="脱离监控">脱离监控</span><input type="text" class="shortcut-input" id="shortcutContentProtect" readonly></div>
+          <div class="srow"><span data-i18n="目录">目录</span><input type="text" class="shortcut-input" id="shortcutToc" readonly></div>
+          <!-- 📑 V4.3.29：书签做成可配置快捷键（默认 Ctrl+Shift+M，避开保留键与已有项） -->
+          <div class="srow"><span data-i18n="书签">书签</span><input type="text" class="shortcut-input" id="shortcutBookmark" readonly></div>
+          <div class="srow"><span></span><div><button data-a="resetShortcuts" data-i18n="恢复默认快捷键">恢复默认快捷键</button></div></div>
+          <!-- 🆘 V4.3.28：改键冲突就地提示（以前只弹主窗 hint，用户盯着设置面板根本看不到） -->
+          <div class="hint" id="shortcutHint" style="display:none; color:#e03a3a;"></div>
+        </div>
+        <div class="section">
+          <h3 data-i18n="朗读">朗读</h3>
+          <div class="srow"><span data-i18n="朗读当前章">朗读当前章</span><div><button id="ttsToggleBtn" data-a="ttsToggle" data-i18n="开始/暂停">开始/暂停</button><button data-a="ttsStop" data-i18n="停止">停止</button></div></div>
+          <div class="srow"><span data-i18n="语速">语速</span><input type="range" id="ttsRateSlider" min="0.5" max="2" step="0.1" style="width:120px;"><span id="ttsRateValue" style="color:var(--color-muted);font-size:11px;">1.0x</span></div>
+          <div class="srow"><span data-i18n="语音">语音</span><select id="ttsVoiceSelect" style="width:150px;"></select></div>
+          <!-- 🔊 V4.3.29：说明「这里为什么只有这几个机械音」+ 一条能一键去装自然语音的路 -->
+          <div class="srow"><span></span><div><button data-a="openSpeechSettings" data-i18n="去系统装更多语音…">去系统装更多语音…</button></div></div>
+          <div class="hint" id="ttsVoiceHint"></div>
+        </div>
+        <div class="section">
+          <h3 data-i18n="主题">主题</h3>
+          <!-- 🎨 V4.3.69：排版预设 = 一键套用（不是"当前状态"）。页边距留到双栏那版。 -->
+          <div class="srow"><span data-i18n="排版预设">排版预设</span><div><button data-a="typePreset" data-v="eye" data-i18n="护眼">护眼</button><button data-a="typePreset" data-v="night" data-i18n="夜间">夜间</button><button data-a="typePreset" data-v="paper" data-i18n="纸质">纸质</button></div></div>
+          <div class="srow"><span data-i18n="已保存主题">已保存主题</span><select id="themeSelect" style="width:150px;"></select></div>
+          <div class="srow"><span></span><div><button data-a="themeApply" id="themeApplyBtn" data-i18n="应用">应用</button><button data-a="themeExport" id="themeExportBtn" data-i18n="导出">导出</button><button data-a="themeDelete" id="themeDeleteBtn" data-i18n="删除">删除</button></div></div>
+          <div class="srow"><span></span><div><button data-a="themeImport" data-i18n="导入主题">导入主题</button><button data-a="themeClear" data-i18n="清除主题">清除主题</button></div></div>
+        </div>
+        <div class="section">
+          <h3 data-i18n="更新">更新</h3>
+          <div class="srow"><span data-i18n="清单地址">清单地址</span><input type="text" id="updateUrlInput" placeholder="https://.../latest.json"></div>
+          <div class="srow"><span></span><div><button data-a="checkUpdate" data-i18n="检查更新">检查更新</button><button id="updateOpenBtn" data-a="openUpdateUrl" style="display:none" data-i18n="打开下载页">打开下载页</button></div></div>
+          <div class="hint" id="updateResult"></div>
+        </div>
+        <div class="section">
+          <h3 data-i18n="文件关联">文件关联</h3>
+          <div class="srow"><span data-i18n="打开方式">打开方式</span><div><button data-a="associate" data-i18n="登记文件类型">登记文件类型</button><button data-a="openDefaultApps" data-i18n="系统默认应用">系统默认应用</button></div></div>
+          <div class="hint" id="associateResult"></div>
+        </div>
+        <div class="section">
+          <h3 data-i18n="数据">数据</h3>
+          <div class="srow"><span data-i18n="数据管理">数据管理</span><div><button data-a="export" data-i18n="导出">导出</button><button data-a="import" data-i18n="导入">导入</button></div></div>
+          <div class="srow"><span data-i18n="自定义CSS">自定义CSS</span><div><button data-a="importCss" data-i18n="导入">导入</button><button data-a="clearCss" data-i18n="清除">清除</button></div></div>
+          <div class="srow"><span data-i18n="日志">日志</span><div><button id="exportLogsBtn" data-i18n="导出日志">导出日志</button><button id="viewLogsBtn" data-i18n="查看日志">查看日志</button><button id="openLogsBtn" data-i18n="日志目录">日志目录</button></div></div>
+          <div class="srow"><span data-i18n="语言">语言</span><div><button data-a="lang" data-v="zh" data-i18n="中文">中文</button><button data-a="lang" data-v="en">English</button></div></div>
+        </div>
+        <div class="section">
+          <h3 data-i18n="反馈">反馈</h3>
+          <div class="srow"><span data-i18n="诊断">诊断</span><div><button id="protectTestBtn" data-a="protectTest" data-i18n="脱监自检">脱监自检</button><button data-a="diagnostics" data-i18n="复制诊断">复制诊断</button><button data-a="feedbackExport" data-i18n="导出反馈包">导出反馈包</button></div></div>
+          <div class="srow"><span data-i18n="反馈地址">反馈地址</span><input type="text" id="feedbackUrlInput" placeholder="https://（可留空）" data-i18n-ph="https://（可留空）"></div>
+          <div class="srow"><span></span><div><button data-a="feedbackOpen" data-i18n="打开反馈地址">打开反馈地址</button><button data-a="supportOpen" data-i18n="支持开发">支持开发</button></div></div>
+        </div>
+        <div class="section">
+          <h3 data-i18n="书架">书架</h3>
+          <div class="srow"><span data-i18n="自动追更">自动追更</span><div class="switch" id="autoUpdateSwitch"><div class="knob"></div></div></div>
+          <div class="srow"><span data-i18n="检查间隔">检查间隔</span><select id="autoUpdateMinSelect" style="width:110px;"><option value="30" data-i18n="30 分钟">30 分钟</option><option value="60" data-i18n="1 小时">1 小时</option><option value="180" data-i18n="3 小时">3 小时</option><option value="360" data-i18n="6 小时">6 小时</option></select></div>
+        </div>
+        <div class="section">
+          <h3 data-i18n="前台监听">前台监听</h3>
+          <div class="srow"><span data-i18n="前台监听">前台监听</span><div class="switch" id="fgWatchSwitch"><div class="knob"></div></div></div>
+          <div class="srow"><span data-i18n="监听程序">监听程序</span><input type="text" id="fgWatchInput" placeholder="如 Weixin.exe,DingTalk.exe" data-i18n-ph="如 Weixin.exe,DingTalk.exe"></div>
+          <!-- 🟥 V4.3.49（R8-1）：开关亮着但观察器没跑（起不来 / 自己退出）时就地说明。
+               刻意用 .hint 而**不是** .srow —— `PANEL_LIST_TEXT` 的
+               `#view-settings .srow > span:first-child` 是按 DOM 顺序逐条对齐的，
+               不是新增设置行就不该动那张表（动错一位后面所有行整体串位）。 -->
+          <div class="hint" id="fgWatchHint" style="display:none; color:#e03a3a;"></div>
+        </div>
+        <!-- 🖥 V4.3.53（R12-2）伴随模式：跟着目标程序一起出现 / 一起收起 + 贴边跟随。
+             🟥 这一节是**新加的 .section**，所以 PANEL_LIST_TEXT 里
+             「#view-settings .section h3」与「.srow > span:first-child」两张表都要按
+             **DOM 顺序**补上：h3 补 '伴随模式'，行标签依次补
+             '跟随目标程序' / '目标程序' / '陪显示时机' / '贴边位置' / '重新贴边'。
+             少补一条 → 后面所有行的标签整体串位（smoke3 的 fg-watch 断言就是守这个的）。 -->
+        <div class="section section-companion">
+          <h3 data-i18n="伴随模式">伴随模式</h3>
+          <div class="srow"><span data-i18n="跟随目标程序">跟随目标程序</span><div class="switch" id="companionSwitch"><div class="knob"></div></div></div>
+          <div class="srow"><span data-i18n="目标程序">目标程序</span><input type="text" id="companionInput" list="dlCompanionTarget" placeholder="如 Weixin.exe" data-i18n-ph="如 Weixin.exe"><button id="companionDetectBtn" class="icon-btn" data-a="companionDetect" title="检测阅读器所在位置的应用" data-i18n-title="检测阅读器所在位置的应用"><svg class="ico" data-ico="crosshair" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button></div>
+          <div class="srow"><span data-i18n="陪显示时机">陪显示时机</span><select id="companionModeSelect" style="width:136px;"><option value="foreground" data-i18n="目标在前台时">目标在前台时</option><option value="visible" data-i18n="目标窗口可见时">目标窗口可见时</option><option value="process" data-i18n="目标一开着就陪">目标一开着就陪</option></select></div>
+          <div class="srow"><span data-i18n="嵌入位置">嵌入位置</span><select id="companionEdgeSelect" style="width:110px;"><option value="free" data-i18n="自由跟随">自由跟随</option><option value="off" data-i18n="不嵌入">不嵌入</option><option value="right" data-i18n="嵌入·右侧">嵌入·右侧</option><option value="left" data-i18n="嵌入·左侧">嵌入·左侧</option><option value="top" data-i18n="嵌入·上方">嵌入·上方</option><option value="bottom" data-i18n="嵌入·下方">嵌入·下方</option><option value="center" data-i18n="嵌入·居中">嵌入·居中</option></select></div>
+          <!-- 🆕 V4.3.55（生命周期联动）：关闭阅读器→目标一起关；最小化/恢复→目标一起最小化/恢复 -->
+          <div class="srow"><span data-i18n="关闭联动">关闭联动</span><div class="switch" id="companionLinkCloseSwitch"><div class="knob"></div></div></div>
+          <div class="srow"><span data-i18n="最小化联动">最小化联动</span><div class="switch" id="companionLinkMinSwitch"><div class="knob"></div></div></div>
+          <!-- 🆕 V4.3.54（吸色联动）：跟随时自动吸取目标界面主色着在阅读器框架上 -->
+          <div class="srow"><span data-i18n="融入目标配色">融入目标配色</span><div class="switch" id="companionTintSwitch"><div class="knob"></div></div></div>
+          <div class="srow"><span data-i18n="重新贴边">重新贴边</span><div><button id="companionRedockBtn" data-a="companionRedock" data-i18n="贴回去">贴回去</button><span class="hint" id="companionDockState"></span></div></div>
+          <div class="hint" data-i18n="目标关掉后阅读器会收进托盘待命（不退出），目标再打开时自动回来。"></div>
+          <div class="hint" id="companionHint" style="display:none; color:#e03a3a;"></div>
+        </div>
+        <div id="logBox" style="display:none; margin-top:8px;">
+          <div class="hint" id="logPathHint"></div>
+          <pre id="logContent" style="max-height:220px; overflow:auto; font-size:11px; line-height:1.5; white-space:pre-wrap; word-break:break-all; color:var(--color-text); background:rgb(var(--surface-2-rgb) / var(--ui-alpha)); border:1px solid var(--surface-border); border-radius:8px; padding:8px;"></pre>
+        </div>
+        <button id="resetAllBtn" data-a="reset" style="width:100%; padding:7px; color:#e03a3a; background:transparent; border:1px solid #e03a3a; border-radius:6px; cursor:pointer;" data-i18n="恢复默认设置">恢复默认设置</button>
+      </div>
+    </div>
+
+    <div id="view-toc" class="view">
+      <div class="head"><span class="head-main"><svg class="ico" data-ico="list" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="5" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="5" cy="17.5" r="1.2" fill="currentColor" stroke="none"/></svg><span class="title" data-i18n="目录">目录</span></span><button class="x" data-close="1" title="关闭" data-i18n-title="关闭"><svg class="ico" data-ico="close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="body" id="tocList"><div class="empty" data-i18n="暂无目录">暂无目录</div></div>
+    </div>
+
+    <div id="view-search" class="view">
+      <div class="head"><span class="head-main"><svg class="ico" data-ico="search" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg><span class="title" data-i18n="全文搜索">全文搜索</span></span><button class="x" data-close="1" title="关闭" data-i18n-title="关闭"><svg class="ico" data-ico="close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="body">
+        <!-- V4.3.33：这个 ✕ 原来写的是 data-a="close"，但通用关闭绑定只认 [data-close]，
+             搜索视图的 initSearch 也没给它绑事件 —— 点了完全没反应。
+             改成 [data-close] 与其它面板的关闭按钮统一。 -->
+<div class="vtab-bar"><button class="vtab" data-vtab="shelf" data-i18n="我的书架">我的书架</button><button class="vtab" data-vtab="search" data-i18n="搜索">搜索</button><button class="vtab" data-vtab="source" data-i18n="书源">书源</button></div>
+        <div class="searchbox"><input type="text" id="searchInput" placeholder="输入关键词，回车/输入即搜" data-i18n-ph="输入关键词，回车/输入即搜"><button data-close="1" title="关闭" data-i18n-title="关闭"><svg class="ico" data-ico="close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+        <div class="hint" id="searchHint" data-i18n="输入内容后自动搜索">输入内容后自动搜索</div>
+        <!-- 🆕 V4.3.23 书库：书源搜索时遇到的小说站自动入库，可直接从站点搜书（用户需求）
+             判定由主进程真请求站点后给出，卡片上写明「凭什么这么判」的依据链。 -->
+        <div class="section" id="libSection">
+          <!-- V4.3.33：标题文字单独包一个 span。原先 h3 直接带文字+子元素，
+               而 applyPanelLang 用 el.textContent 整体赋值 —— 它会把 #libCount
+               这个子元素一并从 DOM 里删掉，导致书库计数再也显示不出来。 -->
+          <h3><span id="libTitle" data-i18n="书库">书库</span> <span id="libCount"></span></h3>
+          <div class="hint" data-i18n="书源搜索过的站会自动存进来。填书名后点某站的「搜本站」，就用那座站再搜一次。">书源搜索过的站会自动存进来。填书名后点某站的「搜本站」，就用那座站再搜一次。</div>
+          <!-- 🆕 V4.3.24：不用先建书源规则，也能把站点存进书库（用户要求「搜索里直接保存网站」） -->
+          <div class="lib-add"><input type="text" id="libAddInput" placeholder="站点域名或主页 URL" data-i18n-ph="站点域名或主页 URL"><button id="libAddBtn" data-i18n="＋ 加入书库">＋ 加入书库</button></div>
+          <div id="libList"><div class="empty" data-i18n="还没有站点。用「书源」搜一次书，站点会自动入库。">还没有站点。用「书源」搜一次书，站点会自动入库。</div></div>
+          <div class="area-log" id="libLog"></div>
+        </div>
+        <div class="res" id="searchResults"></div>
+      </div>
+    </div>
+  <div id="view-source" class="view">
+      <div class="head"><span class="head-main"><svg class="ico" data-ico="rss" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11a8 8 0 0 1 8 8M5 4.5A14.5 14.5 0 0 1 19.5 19"/><circle cx="6" cy="18" r="1.6" fill="currentColor" stroke="none"/></svg><span class="title" data-i18n="书源">书源</span></span><button class="x" data-close="1" title="关闭" data-i18n-title="关闭"><svg class="ico" data-ico="close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="body">
+<div class="vtab-bar"><button class="vtab" data-vtab="shelf" data-i18n="我的书架">我的书架</button><button class="vtab" data-vtab="search" data-i18n="搜索">搜索</button><button class="vtab" data-vtab="source" data-i18n="书源">书源</button></div>
+        <div class="hint" data-i18n="请遵守目标网站条款与版权规定。本软件不内置任何书源，仅在您主动点击时抓取。">请遵守目标网站条款与版权规定。本软件不内置任何书源，仅在您主动点击时抓取。</div>
+        <!-- 🆕 V4.3.85 自动抓取：书源页的**唯一主入口**。
+             用户只粘一个 URL —— 章节目录与正文容器由主进程自动识别（见 main-src/51-source-auto.js），
+             抓完直接载入。手动配置全部收进下面的「高级」，默认收起。 -->
+        <div class="section" id="autoSection">
+          <h3 data-i18n="自动抓取">自动抓取</h3>
+          <div class="hint" data-i18n="粘贴目录页或详情页的 URL，剩下的交给它：自动识别章节与正文、抓完整本并直接打开。">粘贴目录页或详情页的 URL，剩下的交给它：自动识别章节与正文、抓完整本并直接打开。</div>
+          <div class="searchbox"><input type="text" id="autoUrl" placeholder="粘贴目录/详情页 URL" data-i18n-ph="粘贴目录/详情页 URL"><button id="autoFetchBtn" data-i18n="自动抓取并载入">自动抓取并载入</button></div>
+          <div class="src-acts">
+            <button id="autoCancelBtn" style="display:none" data-i18n="取消">取消</button>
+            <span class="src-count" id="autoCount"></span>
+          </div>
+          <div class="progressbar" id="autoProgressBar" style="display:none"><div class="progressfill" id="autoProgressFill"></div></div>
+          <div class="hint area-log" id="autoLog"></div>
+        </div>
+        <!-- 🆕 V4.3.85：手动配置收进「高级」，默认收起 —— 常规流程只剩上面那一个输入框。
+             🟥 展开状态**刻意不持久化**：每次打开面板都回到收起态，避免上次展开后忘了关、
+             又变回"一屏选择器"的旧观感（本版的目的就是简化常规流程）。
+             ⚠️ 这个 .hint 必须排在条款提示之后：PANEL_LIST_TEXT 里 ['#view-source .hint', [...]] 按
+             DOM 顺序逐条对齐，只有第 0 条是那张表管的（其余靠 data-i18n 翻译）。 -->
+        <button id="advToggle" class="adv-toggle" aria-expanded="false"><svg class="ico" data-ico="chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg><span data-i18n="高级">高级</span></button>
+        <div id="advBody" hidden>
+          <div class="hint" data-i18n="这里是给特殊站点准备的手动配置：自己写选择器、按关键词搜索、逐章核对。一般用不到。">这里是给特殊站点准备的手动配置：自己写选择器、按关键词搜索、逐章核对。一般用不到。</div>
+        <div class="section">
+          <h3 data-i18n="规则">规则</h3>
+          <div class="srow"><span data-i18n="当前规则">当前规则</span><select id="sourceRuleSelect"></select></div>
+          <div class="srow"><span data-i18n="名称">名称</span><input type="text" id="srcName" placeholder="书源名称" data-i18n-ph="书源名称"></div>
+          <!-- 🆕 V4.3.24：所有「可数选项」字段一律改成**下拉建议 + 可手输**（input + datalist）。
+               不用硬 <select> 的原因：站点千奇百怪，写死的候选永远不够；而硬下拉会把不在候选里的
+               自定义值**静默弄丢**（select 赋一个不存在的 value 会变空 → 保存时写回默认）。
+               现在：点开能选常见值，也能继续手打；面板还会记住你填过的历史值（越用越省事）。 -->
+          <div class="srow"><span data-i18n="编码">编码</span><input type="text" id="srcEncoding" list="dlEncoding" placeholder="utf-8（可手输，如 shift_jis）" data-i18n-ph="utf-8（可手输，如 shift_jis）"></div>
+          <div class="srow"><span data-i18n="章节选择器">章节选择器</span><input type="text" id="srcChapterItem" list="dlChapterItem" placeholder="如 .list a 或 dd a" data-i18n-ph="如 .list a 或 dd a"></div>
+          <div class="srow"><span data-i18n="链接属性">链接属性</span><input type="text" id="srcLinkAttr" list="dlLinkAttr" placeholder="href"></div>
+          <div class="srow"><span data-i18n="标题属性">标题属性</span><input type="text" id="srcTitleAttr" list="dlTitleAttr" placeholder="留空=取元素文字" data-i18n-ph="留空=取元素文字"></div>
+          <div class="srow"><span data-i18n="正文选择器">正文选择器</span><input type="text" id="srcContentSel" list="dlContentSel" placeholder="如 #content 或 .read-content" data-i18n-ph="如 #content 或 .read-content"></div>
+          <div class="srow"><span data-i18n="移除选择器">移除选择器</span><input type="text" id="srcRemoveSel" list="dlRemoveSel" placeholder="如 script,style,.ad" data-i18n-ph="如 script,style,.ad"></div>
+          <div class="srow"><span data-i18n="并发抓取">并发抓取</span><input type="number" id="srcConcurrent" list="dlConcurrent" min="1" max="8" value="3"></div>
+          <div class="srow"><span data-i18n="请求间隔">请求间隔</span><input type="number" id="srcInterval" list="dlInterval" min="0" max="2000" value="250"><span>ms</span></div>
+          <div class="srow"><span data-i18n="搜索URL">搜索URL</span><input type="text" id="srcSearchUrl" list="dlSearchUrl" placeholder="https://site/search?q={kw}"></div>
+          <div class="srow"><span data-i18n="书库站点">书库站点</span><div><select id="srcLibSites"></select><button id="sourceFromLibBtn" data-i18n="填入搜索URL">填入搜索URL</button></div></div>
+          <div class="srow"><span data-i18n="结果选择器">结果选择器</span><input type="text" id="srcResultItem" list="dlResultItem" placeholder="如 .result-item" data-i18n-ph="如 .result-item"></div>
+          <div class="srow"><span data-i18n="标题选择器">标题选择器</span><input type="text" id="srcSearchTitle" list="dlSearchTitle" placeholder="如 h3 a" data-i18n-ph="如 h3 a"></div>
+          <div class="srow"><span data-i18n="作者选择器">作者选择器</span><input type="text" id="srcSearchAuthor" list="dlSearchAuthor" placeholder="如 .author（可留空）" data-i18n-ph="如 .author（可留空）"></div>
+          <div class="srow"><span data-i18n="链接选择器">链接选择器</span><input type="text" id="srcSearchBookUrl" list="dlSearchBookUrl" placeholder="如 h3 a" data-i18n-ph="如 h3 a"></div>
+          <div class="srow"><span data-i18n="结果链接属性">结果链接属性</span><input type="text" id="srcSearchBookUrlAttr" list="dlLinkAttr" placeholder="href（原先是写死的）" data-i18n-ph="href（原先是写死的）"></div>
+          <!-- 🆕 V4.3.24：两个书源级开关 -->
+          <div class="srow"><span data-i18n="章节倒序">章节倒序</span><div><label class="sosc"><input type="checkbox" id="srcChaptersReversed"> <span data-i18n="列表反序（站点把章节倒着排时打开，载入后即按正序读）">列表反序（站点把章节倒着排时打开，载入后即按正序读）</span></label></div></div>
+          <div class="srow"><span data-i18n="正文自动分页">正文自动分页</span><div><label class="sosc"><input type="checkbox" id="srcAutoPaginate"> <span data-i18n="抓取时分批续抓，不全量一次性拉（适合几千章的大书）">抓取时分批续抓，不全量一次性拉（适合几千章的大书）</span></label></div></div>
+          <div class="srow"><span></span><div><button id="sourceSaveBtn" data-i18n="保存规则">保存规则</button><button id="sourceImportBtn" data-i18n="导入JSON">导入JSON</button><button id="sourceDeleteBtn" data-i18n="删除">删除</button></div></div>
+          <div class="srow"><span></span><div><button id="sourceTestBtn" data-i18n="🧪 试抓（验证选择器）">🧪 试抓（验证选择器）</button></div></div>
+          <div class="hint area-log" id="sourceRuleLog"></div>
+        </div>
+        <div class="section">
+          <h3 data-i18n="搜索">搜索</h3>
+          <div class="searchbox"><input type="text" id="sourceSearchInput" placeholder="输入书名/作者" data-i18n-ph="输入书名/作者"><button id="sourceSearchBtn" data-i18n="搜索">搜索</button></div>
+          <!-- 📑 V4.3.29：翻页 / 取消 / 计数。
+               翻页要规则里的「搜索URL」带 {page} 才会出现（不带就只有一页，不给假的下一页）。
+               取消是「软取消」：请求已经在路上拦不回来，等它返回后结果直接丢弃，并如实说明。 -->
+          <div class="src-acts">
+            <button id="sourceNextPageBtn" style="display:none" data-i18n="下一页">下一页</button>
+            <button id="sourceSearchCancelBtn" style="display:none" data-i18n="取消">取消</button>
+            <span class="src-count" id="sourceSearchCount"></span>
+          </div>
+          <!-- 搜索是单次请求，拿不到字节级百分比 —— 用「来回扫动的条」表示在跑，不编造假进度 -->
+          <div class="progressbar" id="sourceSearchProgressBar" style="display:none"><div class="progressfill busy" id="sourceSearchProgressFill"></div></div>
+          <div class="res" id="sourceSearchResults"></div>
+          <div class="hint area-log" id="sourceSearchLog"></div>
+        </div>
+        <div class="section">
+          <h3 data-i18n="抓取">抓取</h3>
+          <div class="searchbox"><input type="text" id="sourceBookUrl" placeholder="粘贴目录/详情页 URL" data-i18n-ph="粘贴目录/详情页 URL"><button id="sourceFetchListBtn" data-i18n="抓章节">抓章节</button></div>
+          <div class="res" id="sourceList"></div>
+          <div class="srow"><span id="sourceCount"></span><div><button id="sourceFetchAllBtn" data-i18n="抓取正文并载入">抓取正文并载入</button><button id="sourceRetryBtn" style="display:none" data-i18n="重试失败章节">重试失败章节</button><button id="sourceCancelBtn" data-i18n="取消">取消</button></div></div>
+          <div class="hint area-log" id="sourceFetchLog"></div>
+          <div class="progressbar"><div class="progressfill" id="sourceProgressFill"></div></div>
+        </div>
+        </div>
+        <!-- 🆕 V4.3.24 各字段的候选值（内置常见值 + 你填过的历史值，由 panel.js 填充） -->
+        <datalist id="dlEncoding"></datalist>
+        <datalist id="dlChapterItem"></datalist>
+        <datalist id="dlLinkAttr"></datalist>
+        <datalist id="dlTitleAttr"></datalist>
+        <datalist id="dlContentSel"></datalist>
+        <!-- 🆕 V4.3.53（建议 1）伴随目标历史：与主窗共用同源 localStorage 的 fct 键，panel.js 灌充 -->
+        <datalist id="dlCompanionTarget"></datalist>
+        <datalist id="dlRemoveSel"></datalist>
+        <datalist id="dlConcurrent"></datalist>
+        <datalist id="dlInterval"></datalist>
+        <datalist id="dlSearchUrl"></datalist>
+        <datalist id="dlResultItem"></datalist>
+        <datalist id="dlSearchTitle"></datalist>
+        <datalist id="dlSearchAuthor"></datalist>
+        <datalist id="dlSearchBookUrl"></datalist>
+      </div>
+    </div>
+    <div id="view-shelf" class="view">
+      <div class="head"><span class="head-main"><svg class="ico" data-ico="book" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4.5h6.2A2.8 2.8 0 0 1 13 7.3v12a2.2 2.2 0 0 0-2.2-2.2H4z"/><path d="M20 4.5h-6.2A2.8 2.8 0 0 0 11 7.3v12a2.2 2.2 0 0 1 2.2-2.2H20z"/></svg><span class="title" data-i18n="书架">书架</span></span><button class="x" data-close="1" title="关闭" data-i18n-title="关闭"><svg class="ico" data-ico="close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+<div class="vtab-bar"><button class="vtab" data-vtab="shelf" data-i18n="我的书架">我的书架</button><button class="vtab" data-vtab="search" data-i18n="搜索">搜索</button><button class="vtab" data-vtab="source" data-i18n="书源">书源</button></div>
+      <div class="shelf-actions">
+        <button id="shelfSelectAllBtn" data-i18n="全选/全不选">全选/全不选</button>
+        <button id="shelfExportBtn" data-i18n="导出选中">导出选中</button>
+        <button id="shelfImportBtn" data-i18n="导入书架">导入书架</button>
+        <button id="shelfUpdateBtn" data-i18n="检查更新">检查更新</button>
+        <select id="shelfSort" title="排序方式" data-i18n-title="排序方式">
+          <option value="recent" data-i18n="最近在读">最近在读</option>
+          <option value="progress" data-i18n="按进度">按进度</option>
+          <option value="added" data-i18n="按添加时间">按添加时间</option>
+        </select>
+      </div>
+      <!-- 🆕 V4.3.57（需求三批 1）：顶部「继续阅读」卡片 —— 关掉再开一键回到上次那本书 -->
+      <div id="shelfContinue"></div>
+      <div class="body" id="shelfList"><div class="empty" data-i18n="加载中…">加载中…</div></div>
+      <div class="hint area-log" id="shelfLog"></div>
+    </div>
+
+    <!-- 📑 V4.3.29 书签列表（原「列表」按钮升级为独立面板）
+         把三件事收在一处：给当前章加/移除书签、按标题过滤、点击直达；并给它配了可改键的快捷键。 -->
+    <div id="view-bookmarks" class="view">
+      <div class="head"><span class="head-main"><svg class="ico" data-ico="bookmark" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5h10v16l-5-3.6-5 3.6z"/></svg><span class="title" data-i18n="书签列表">书签列表</span></span><button class="x" data-close="1" title="关闭" data-i18n-title="关闭"><svg class="ico" data-ico="close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="bookmark-actions">
+        <button id="bmToggleBtn">☆ 加书签</button>
+        <span class="bm-count" id="bmCount"></span>
+      </div>
+      <div class="searchbox"><input type="text" id="bmFilter" placeholder="过滤标题（输入即筛）" data-i18n-ph="过滤标题（输入即筛）"><button id="bmFilterClear" title="清除" data-i18n-title="清除"><svg class="ico" data-ico="close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="res" id="bookmarkListPanel"><div class="empty" data-i18n="还没有书签">还没有书签</div></div>
+      <div class="hint" id="bmHint"></div>
+    </div>
+
+    <!-- 🖍 V4.3.71 批注列表：按章分组，点条目跳回原文。图标先写占位 span，由 _ico_gen.js --write 生成真 SVG。 -->
+    <div id="view-annot" class="view">
+      <div class="head"><span class="head-main"><svg class="ico" data-ico="edit" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 19.5h4l10-10-4-4-10 10z"/><path d="M14.5 5.5l4 4"/></svg><span class="title" data-i18n="批注">批注</span></span><button class="x" data-close="1" title="关闭" data-i18n-title="关闭"><svg class="ico" data-ico="close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="bookmark-actions">
+        <button id="annExportBtn" data-i18n="导出 Markdown">导出 Markdown</button>
+        <span class="bm-count" id="annCount"></span>
+      </div>
+      <div class="searchbox"><input type="text" id="annFilter" placeholder="过滤原文 / 笔记" data-i18n-ph="过滤原文 / 笔记"><button id="annFilterClear" title="清除" data-i18n-title="清除"><svg class="ico" data-ico="close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="res" id="annotList"><div class="empty" data-i18n="还没有批注">还没有批注</div></div>
+      <div class="hint" id="annHint"></div>
+    </div>
+  </div>
+
+<!-- 🟥 V4.3.45（R4-4）：本地日期（导出文件名）单点真源在 util.js 的 ReaderUtil.localDateKey，
+     与主窗 index.html、主进程 main.js 共用同一份实现。面板原先没加载它，只能自己抄一遍。 -->
+<script src="./scripts/util.js"></script>
+<!-- 🎨 V4.3.63：动态按钮用的图标运行时（由 _ico_gen.js 从 scripts/icons.js 生成）。
+     必须排在 panel.js 之前 —— 面板里运行时拼出来的按钮（书架动作卡 / 书库站点卡 / 书源行）
+     要用 window.ReaderIcons.svg() 拿和静态按钮同一套线条图标。 -->
+<script src="./scripts/icons-browser.js"></script>
+<!-- 🟥 V4.3.44（R3-4）：静态文案对照表（data-i18n 标记）。必须排在 panel.js 之前。 -->
+<script src="./scripts/i18n-literals.js"></script>
+<script src="./scripts/panel.js"></script>
+</body>
+</html>

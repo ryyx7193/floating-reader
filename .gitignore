@@ -1,0 +1,29 @@
+# 依赖
+node_modules/
+
+# 打包产物
+app.asar
+dist/
+*.zip
+
+# 调试残留（根目录 _ 开头的临时脚本）
+_*.js
+_*.ps1
+_*.txt
+_*.html
+# 🟥 例外：构建入口必须进仓库，否则别人 clone 下来改分片无法重建
+!_build_app.js
+
+# 本地一次性用户数据（探针用）
+_*_ud/
+_lang*_ud/
+
+# 内部 AI 编码规范（引用仓库外的上位文档，不对外）
+AGENTS.md
+
+# 日志
+*.log
+
+# 系统
+.DS_Store
+Thumbs.db

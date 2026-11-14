@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <!-- 🛡 内容安全策略。
+         V4.3.35 曾把 script-src 写成 'self' 'unsafe-eval'，理由是"vendor 五个库都真实依赖动态求值，
+         去掉会让 epub / pdf / docx 直接失效"—— 🟥 该结论未经实证，且已被 V4.3.73 推翻：
+         逐库核查 + 真跑三条路径（探针 _v473_csp_probe.js），五个库里的动态求值全部有护栏：
+           · pdf.js / pdf.worker：isEvalSupported 是**自检**（new Function 抛错就返回 false），
+             CSP 拦下后自动走非 eval 路径（字体 glyph / PostScript 编译根本不会被调用）；
+           · epub.js：new Function("return this") 只是全局对象探测的兜底，包在 try/catch 里；
+           · jszip：setImmediate 只有字符串形态才走 new Function，本项目传的是函数；
+           · mammoth：canEvaluate 守卫 + try/catch。
+         实证结果：删掉 'unsafe-eval' 后 EPUB 封面提取 / PDF 解析渲染 / DOCX 抽文本三条路径全通。
+         收益：主窗渲染**不可信正文**（书源抓来的 HTML、导入的 epub/docx），
+         之前这个放宽会让"HTML 注入"有机会升级成"代码执行"，现在这条升级路径被关死。
+         script-src 仍然挡住「内联脚本标签」与「外部域脚本」：
+         注入 HTML 时最常见的 alert 型内联脚本与 on* 事件属性都跑不起来。
+         （注意：这里刻意不写字面量尖括号标签 —— 否则本项目的内联脚本门禁会把它当成真内联脚本。） -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; media-src 'self' data: blob:; connect-src 'self' data: blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+<title data-i18n="浅水鲸">浅水鲸</title>
+    <!-- 第三方库本地引用（请确保 vendor 文件夹存在） -->
+    <script src="./vendor/mammoth.browser.min.js"></script>
+    <!-- 🟥 epub.js 依赖 JSZip 解包 epub 容器，必须排在 epub.min.js 之前（V4.3.27） -->
+    <script src="./vendor/jszip.min.js"></script>
+    <script src="./vendor/epub.min.js"></script>
+    <script src="./vendor/pdf.min.js"></script>
+    <link rel="stylesheet" href="./styles/tokens.css">
+    <link rel="stylesheet" href="./styles/radius.css">
+    <link rel="stylesheet" href="./styles/icons.css">
+    <link rel="stylesheet" href="./styles/main.css">
+    <link rel="stylesheet" href="./styles/disguise.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 🐋 V4.3.53（R12-4）伴随模式的「就地浮层」—— 主人 2026-10-13 原话：
+             「我们嵌入的时候要怎么点进设置里面设置呢？调整设置呢？应该是在首页或者说顶页，
+              有没有更快捷一点的设置方法？而不是点进应用设置里面」。
+             所以这块**不打开任何新窗口**：五个控件全部复用 scripts/app.js 里已有的
+             toggleCompanion / setCompanionTarget / setCompanionMode / setCompanionEdge / redockCompanion
+             （规则 34：同一动作多个入口 ⇒ 收口成单一 helper，不新增第二条数据通路）。
+             挂成 #app 的直接子元素 + position:fixed：躲开 #mainContent 的 overflow:hidden 与圆角裁剪，
+             定位坐标由 app.js:placeCompanionPop 按按钮矩形现算（规则 63：坐标不跨状态复用）。
+             显隐/两态由 syncCompanionUI 负责；⚠️ 它**绝不回写**这里的输入框 —— 
+             否则会踩 R11 那条「面板周期回写打断用户正在做的操作」。 -->
+        <div id="companionPop">
+            <!-- 🆕 V4.3.94（主人：「跟随模式的吸色可以在跟随设置里面选择开启或者关闭」
+                 「然后的话要有重置按钮，排版布局根据跟随模式里面的窗口进行优化」）
+                 重构：8 行平铺 → 「跟随 / 联动 / 外观 / 操作」四组；
+                 每行控件统一包进 .cctrl（固定列宽、右缘对齐），见 styles/main.css 的 grid 规则；
+                 「融入目标配色」下新增一行「当前配色」：色块显示这次吸到了什么，
+                 「重置」清掉它、恢复用户自己的配色并让主进程下一拍重吸。
+                 ⚠️ 所有 id 与事件绑定保持原样（_v454/_v455 静态锁会逐个查）。 -->
+            <div class="cgt" data-i18n="跟随">跟随</div>
+            <div class="crow"><span data-i18n="跟随目标程序">跟随目标程序</span><div class="cctrl"><div class="switch" id="companionPopSwitch"><div class="knob"></div></div></div></div>
+            <div class="crow"><span data-i18n="目标程序">目标程序</span><div class="cctrl"><input type="text" id="companionPopInput" list="dlCompanionTarget" placeholder="如 Weixin.exe" data-i18n-ph="如 Weixin.exe"><button id="companionPopDetect" class="icon-btn" title="检测阅读器所在位置的应用" data-i18n-title="检测阅读器所在位置的应用"><svg class="ico" data-ico="crosshair" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button></div></div>
+            <div class="crow"><span data-i18n="陪显示时机">陪显示时机</span><div class="cctrl"><select id="companionPopMode"><option value="foreground" data-i18n="目标在前台时">目标在前台时</option><option value="visible" data-i18n="目标窗口可见时">目标窗口可见时</option><option value="process" data-i18n="目标一开着就陪">目标一开着就陪</option></select></div></div>
+            <div class="crow"><span data-i18n="嵌入位置">嵌入位置</span><div class="cctrl"><select id="companionPopEdge"><option value="free" data-i18n="自由跟随">自由跟随</option><option value="off" data-i18n="不嵌入">不嵌入</option><option value="right" data-i18n="嵌入·右侧">嵌入·右侧</option><option value="left" data-i18n="嵌入·左侧">嵌入·左侧</option><option value="top" data-i18n="嵌入·上方">嵌入·上方</option><option value="bottom" data-i18n="嵌入·下方">嵌入·下方</option><option value="center" data-i18n="嵌入·居中">嵌入·居中</option></select></div></div>
+
+            <!-- 🆕 V4.3.94：外观组**紧跟跟随组**（第二屏之前就能看到，别把「重置」挤进滚动区）。
+                 一行里放：色块（这次吸到了什么）+ 开关（要不要开）+ 重置（清掉重吸）。 -->
+            <div class="cgt" data-i18n="外观">外观</div>
+            <div class="crow"><span data-i18n="融入目标配色">融入目标配色</span><div class="cctrl"><span id="companionTintSwatch" class="ctsw" title="当前吸到的目标配色" data-i18n-title="当前吸到的目标配色"></span><div class="switch" id="companionPopTint"><div class="knob"></div></div><button id="companionTintReset" class="mini-btn" data-i18n="重置">重置</button></div></div>
+
+            <div class="cgt" data-i18n="联动">联动</div>
+            <div class="crow"><span data-i18n="关闭联动">关闭联动</span><div class="cctrl"><div class="switch" id="companionPopLinkClose"><div class="knob"></div></div></div></div>
+            <div class="crow"><span data-i18n="最小化联动">最小化联动</span><div class="cctrl"><div class="switch" id="companionPopLinkMin"><div class="knob"></div></div></div></div>
+
+            <div class="cgt" data-i18n="操作">操作</div>
+            <div class="crow"><span data-i18n="重新贴边">重新贴边</span><div class="cctrl"><button id="companionPopRedock" data-i18n="贴回去">贴回去</button></div></div>
+        </div>
+        <!-- 🆕 V4.3.53（建议 1）目标程序历史候选：由 app.js:fillCompanionTargetDatalist() 灌充，
+             与设置面板窗口共用同源 localStorage 的 fct 键（跨窗口各自一份 datalist）。 -->
+        <datalist id="dlCompanionTarget"></datalist>
+
+        <!-- 主内容区 -->
+        <div id="mainContent">
+            <!-- 专注模式的系统级拖动条：平时隐藏，进专注模式出现在窗口顶边。
+                 -webkit-app-region:drag 由系统直接搬窗口（和普通模式标题栏同一条路径，0 延迟），
+                 专治「代码移动窗口有半拍滞后」；正文拖动仍走原有事件驱动。 -->
+            <div id="focusDragBar" aria-hidden="true"></div>
+            <div class="title-bar">
+                <div class="left">
+                    <button id="toggleToolbarBtn" title="工具栏" data-i18n-title="工具栏"><svg class="ico" data-ico="menu" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+                    <span id="titleText" data-i18n="📖 阅读器">📖 阅读器</span>
+                    <!-- 🆕 V4.3.92（视觉复核：多书标签栏原来只能点标题文字展开，没有任何提示，等于隐藏功能）
+                         这里给它一个看得见的入口：一个细箭头，**只有书架里 ≥2 本时才显示**
+                         （只有一本时没什么可切的，显示出来只会占地方）。
+                         图标走真源 chevron-down，展开时用 CSS 转 180° 表示"收起"，不另注册一个 up 图标。 -->
+                    <button id="tabPeekBtn" title="切换书籍" data-i18n-title="切换书籍" hidden><svg class="ico" data-ico="chevron-down" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button>
+                </div>
+                <div class="right">
+                    <!-- 🐋 V4.3.53（R12-4）伴随模式顶栏入口（主人要求「放在首页/顶页，别点进应用设置里」）。
+                         一直显示（主人 2026-10-13 定案）：左键＝开/关就地浮层，右键＝直接开/关伴随模式。
+                         ⚠️ 图标必须跟标题栏其余按钮一样用**线条 SVG**（main.css 顶部那条约定：
+                         ⊞❓ 这类字形图标在不同字体下粗细/颜色都不一致，"换成同规格描边图标才成一套"）；
+                         smoke2 的 titleIcons 会抓这个 —— 它就是按"每个 .title-bar button 里有没有 svg"逐个数出来的。
+                         图案＝两个并排的窗（右窗更窄、与左窗**共边**）＝"陪在旁边 + 贴边"。
+                         两态：关=灰+半透明，开=主色+淡蓝底，贴边被拖走暂停=琥珀内描边，见 styles/main.css。 -->
+                    <button id="companionBtn" title="伴随模式（点开就近调整 · 右键直接开关）" data-i18n-title="伴随模式（点开就近调整 · 右键直接开关）"><svg class="ico" data-ico="panels" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="11" height="15" rx="2"/><rect x="14" y="7.5" width="7" height="9" rx="1.5"/></svg></button>
+                    <button id="focusBtn" title="专注模式" data-i18n-title="专注模式"><svg class="ico" data-ico="focus" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M12 3.5v17M3.5 12h17"/></svg></button>
+                    <!-- 🖥 V4.3.53：全屏按钮（主人要求"放到右上角、叉附近、专注模式与快捷键旁边"）。
+                         双态图标：平时"四角外扩"（点它＝进入全屏），全屏时"四角内收"（点它＝退出），
+                         切换由 styles/main.css 的 body.fs 规则做 —— 与双击标题栏走**同一条** IPC 链
+                         （win:fullscreen），不新增第二条通路。 -->
+                    <!-- 🆕 V4.3.84：最小化按钮（主人要求「放在已有的最大化按钮旁边」）。
+                         位置刻意在 fullscreenBtn **之前**：与 Windows 的「最小化 → 最大化 → 关闭」
+                         顺序一致，也与右侧组的视觉重量（细线图标）连贯。
+                         图标是**居中横线**（不是全屏退出那个「四角内收」——那个 data-ico="minimize"
+                         已被 fullscreenBtn 的 ico-exit 占用，语义是"退出全屏"）。
+                         行为：最小化到任务栏（主窗没设 skipTaskbar，能点回来）；主进程的
+                         'minimize' 事件负责推 window:visibility=false（停朗读/自动滚动）并隐藏面板窗。 -->
+                    <button id="helpBtn" title="快捷键" data-i18n-title="快捷键"><svg class="ico" data-ico="help" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.2 9.4a2.9 2.9 0 1 1 3.9 2.8c-.7.3-1.1.8-1.1 1.6v.4"/><circle cx="12" cy="17.4" r="1.05" fill="currentColor" stroke="none"/></svg></button>
+                    <button id="minimizeBtn" title="最小化" data-i18n-title="最小化"><svg class="ico" data-ico="win-minimize" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12"/></svg></button>
+                    <button id="fullscreenBtn" title="全屏" data-i18n-title="全屏"><svg class="ico-enter" data-ico="maximize" data-state="ico-enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 4H4v5.5M14.5 4H20v5.5M20 14.5V20h-5.5M9.5 20H4v-5.5"/></svg><svg class="ico-exit" data-ico="minimize" data-state="ico-exit" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h5.5V4M20 9.5h-5.5V4M20 14.5h-5.5V20M4 14.5h5.5V20"/></svg></button>
+                    <button id="closeBtn" title="隐藏窗口" data-i18n-title="隐藏窗口"><svg class="ico" data-ico="close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+                </div>
+            </div>
+            <!-- 🐋 V4.3.53（R12-4）贴边暂停时的顶部动作条 —— 发生在眼前的事就地解决。
+                 旧行为只弹一条 4 秒就消失的 showHint，内容还是「设置里点『贴回去』可恢复」，
+                 等于当场把用户支到另一个窗口去。这条常驻到「贴回去 / 关掉」为止。
+                 放在 .title-bar 之后、.tab-bar 之前：是真正参与布局的条（不是浮层），
+                 不会被 #mainContent 的 overflow 裁掉。 -->
+            <div id="companionBar">
+                <span id="companionBarText" data-i18n="跟随已暂停">跟随已暂停</span>
+                <span class="sp"></span>
+                <button id="companionBarRedock" data-i18n="贴回去">贴回去</button>
+                <select id="companionBarEdge" title="换个位置" data-i18n-title="换个位置"><option value="free" data-i18n="自由跟随">自由跟随</option><option value="off" data-i18n="不嵌入">不嵌入</option><option value="right" data-i18n="嵌入·右侧">嵌入·右侧</option><option value="left" data-i18n="嵌入·左侧">嵌入·左侧</option><option value="top" data-i18n="嵌入·上方">嵌入·上方</option><option value="bottom" data-i18n="嵌入·下方">嵌入·下方</option><option value="center" data-i18n="嵌入·居中">嵌入·居中</option></select>
+                <button id="companionBarOff" data-i18n="关掉">关掉</button>
+            </div>
+            <div class="tab-bar" id="tabBar"></div>
+            <div class="content-wrapper" id="contentWrapper">
+                <!-- 📖 V4.3.68：这里**不能**带 data-i18n —— 它是运行时正文容器，
+              带了就会被 applyI18nLiterals 的 textContent 覆盖（切语言/切模式都会清空正文）。
+              首屏占位文案保留字面值，空书状态下由 app.js 按当前语言重写。 -->
+            <!-- 📖 V4.3.68：data-runtime 表示「内容由 JS 运行时接管」——
+             静态文案只用于首屏，applyI18nLiterals 必须跳过它，
+             否则渲染后的正文会被 textContent 覆盖掉（切语言/切模式都会触发）。 -->
+            <div class="content" id="novelContent" data-i18n="点击「加载」选择文件" data-runtime="1">点击「加载」选择文件</div>
+                <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><span data-i18n="正在解析…">正在解析…</span></div>
+            </div>
+            <div id="failedBar">
+                <span id="failedText"></span>
+                <button id="failedRetryBtn" data-i18n="重新抓取本章">重新抓取本章</button>
+            </div>
+            <div class="search-bar" id="searchBar">
+                <input type="text" id="searchInput" placeholder="搜索..." data-i18n-ph="搜索...">
+                <span class="count" id="searchCount">0/0</span>
+                <button id="searchPrev" title="上一个" data-i18n-title="上一个"><svg class="ico" data-ico="chevron-left" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6L8.5 12l6 6"/></svg></button>
+                <button id="searchNext" title="下一个" data-i18n-title="下一个"><svg class="ico" data-ico="chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></button>
+                <button id="searchClose" title="关闭搜索" data-i18n-title="关闭搜索"><svg class="ico" data-ico="close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+            </div>
+            <div class="footer">
+                <span id="statusText" data-i18n="📌 请加载文件">📌 请加载文件</span>
+                <div class="progress-bar" id="progressBar"><div class="fill" id="progressFill"></div></div>
+                <div class="footer-right"><span id="modeIndicator" class="mode-indicator" data-i18n="📖 阅读">📖 阅读</span></div>
+            </div>
+            <div class="btn-group">
+                <div class="nav-group">
+                    <button id="prevBtn"><svg class="ico" data-ico="chevron-left" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6L8.5 12l6 6"/></svg><span class="lbl" data-i18n="上一章">上一章</span></button>
+                    <button id="nextBtn"><span class="lbl" data-i18n="下一章">下一章</span><svg class="ico" data-ico="chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></button>
+                </div>
+                <div class="action-group">
+                    <button id="loadBtn"><svg class="ico" data-ico="folder-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9V6.2A1.7 1.7 0 0 1 5.2 4.5h4l2 2.4h7.1A1.7 1.7 0 0 1 20 8.6V9"/><path d="M3.5 9.5h17l-2 8.3a1.7 1.7 0 0 1-1.7 1.2H6.2a1.7 1.7 0 0 1-1.7-1.3z"/></svg><span class="lbl" data-i18n="加载">加载</span></button>
+                    <button class="danger-btn" id="clearBtn"><svg class="ico" data-ico="trash" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 7h15M9.5 7V4.6h5V7M6.5 7l1 13h9l1-13"/><path d="M10.5 11v5M13.5 11v5"/></svg></button>
+                </div>
+            </div>
+            <!-- 📑 V4.3.29：原 #bookmarkList（V4.0 遗留的主窗书签浮层）删除 —— 列表升级为独立「书签列表」面板 -->
+            <div id="resizeGrip" class="resize-grip" title="拖动调整窗口大小" data-i18n-title="拖动调整窗口大小"></div>
+            <div id="hintToast" class="hint-toast"></div>
+            <div id="pickPreview"><span class="swatch"></span><span class="hex"></span><span class="tag"></span></div>
+            <div id="pwdModal">
+                <div class="pwd-box">
+                    <div class="pwd-title" id="pwdTitle" data-i18n="输入口令">输入口令</div>
+                    <div class="pwd-hint" id="pwdHint"></div>
+                    <input type="password" id="pwdInput" autocomplete="off">
+                    <div class="pwd-actions">
+                        <button id="pwdCancel" data-i18n="取消">取消</button>
+                        <button id="pwdOk" data-i18n="确定">确定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 老板模式伪装层：默认隐藏，内容由 scripts/disguise.js 在进入时生成 -->
+    <div id="disguiseLayer" class="disguise-layer"></div>
+
+    <div id="dropZone" data-i18n="📄 松开导入文件">📄 松开导入文件</div>
+    <div class="shortcut-help" id="shortcutHelp">
+        <div class="title" data-i18n="helpTitle">⌨️ 快捷键</div>
+        <div id="shortcutHelpRows"></div>
+    </div>
+
+    <style id="customStyleContainer"></style>
+
+    <script src="./scripts/exts.js"></script>
+    <!-- 🟥 V4.3.44（R3-4）：静态文案对照表（data-i18n 标记）。必须排在 app.js 之前 ——
+         app.js 的 applyLanguage 要调 window.applyI18nLiterals。 -->
+    <script src="./scripts/i18n-literals.js"></script>
+    <script src="./scripts/util.js"></script>
+    <script src="./scripts/crypto-export.js"></script>
+    <script src="./scripts/tts.js"></script>
+    <script src="./scripts/themes.js"></script>
+    <script src="./scripts/disguise.js"></script>
+    <script src="./scripts/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+{
+  "name": "floating-reader",
+  "productName": "悬浮阅读器",
+  "version": "4.3.97",
+  "description": "悬浮阅读器（浅水鲸）—— 轻量悬浮式本地阅读器，支持 TXT / EPUB / PDF / Markdown",
+  "main": "main.js",
+  "author": "MyReader",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "44.6.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.myreader.floatingreader",
+    "productName": "悬浮阅读器",
+    "electronDist": "../electron",
+    "electronVersion": "44.6.0",
+    "files": [
+      "**/*",
+      "!**/_*.js",
+      "!smoke*.js",
+      "!**/test/**",
+      "!tests/**",
+      "!*.md",
+      "!package-lock.json",
+      "!**/*.precheck",
+      "!**/*.bak",
+      "!**/*.tmp",
+      "!**/*.orig"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "dir",
+        "nsis"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    }
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "iconv-lite": "^0.7.3"
+  },
+  "license": "AGPL-3.0-or-later",
+  "keywords": [
+    "electron",
+    "reader",
+    "epub",
+    "txt",
+    "floating-window",
+    "desktop-app",
+    "chinese"
+  ],
+  "private": false
+}
