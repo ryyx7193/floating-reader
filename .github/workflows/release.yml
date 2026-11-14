@@ -4,11 +4,11 @@ name: Build & Release
 on:
   push:
     tags: ['v*']
+  # 🟥 这里必须**不写任何子项**。原先写了 inputs.version 但漏了 `type` ——
+  #    GitHub 的 workflow schema 里 workflow_dispatch.inputs.<id>.type 是必填，
+  #    缺了会让整个手动触发失效：文件照样能被列出、Actions 页面也显示 workflow 名，
+  #    但右上角 `...` 菜单里只有 "Create status badge"，没有 "Run workflow"。
   workflow_dispatch:
-    inputs:
-      version:
-        description: '手动构建时用的版本号（仅打 tag 场景可留空）'
-        required: false
 
 permissions:
   contents: write      # 创建 Release 需要
