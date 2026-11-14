@@ -46,14 +46,24 @@ app.whenReady().then(async () => {
   ck('BTN_FEEDBACK_STILL_THERE', h.hasFeedback === true);
   ck('FEEDBACK_DEFAULT_INJECTED', /github\.com/.test(String(h.fbInput)), 'value=' + h.fbInput);
 
-  // 2. 点「支持开发」→ 应给明确提示（SUPPORT_URL 为空，不应弹浏览器）
-  await pw.executeJavaScript(`(function(){const e=document.querySelector('[data-a="supportOpen"]');if(e)e.click();})()`).catch(() => {});
-  await sleep(700);
-  const hint = await mw.executeJavaScript(`(function(){
-    const el = document.getElementById('hintBar') || document.querySelector('.hint-bar') || document.querySelector('[class*="hint"]');
-    return el ? el.textContent : '';
-  })()`).catch(() => '');
-  ck('SUPPORT_CLICK_HINT', /暂未设置赞助地址|No sponsorship URL set/.test(String(hint)), 'hint=' + hint);
+  // 2. 赞助按钮
+  //    🟥 一旦 CONFIG.SUPPORT_URL 配了真实地址，点击会**真打开系统浏览器** —— 测试里不能点。
+  //    所以这里先读源码判断：配了地址就只做静态断言，没配才验证「点了给明确提示」。
+  const appSrc = fs.readFileSync(path.resolve(__dirname, '..', 'scripts', 'app.js'), 'utf8');
+  const mUrl = appSrc.match(/SUPPORT_URL:\s*'([^']*)'/);
+  const supportUrl = mUrl ? mUrl[1] : '';
+  if (supportUrl) {
+    ck('SUPPORT_URL_CONFIGURED', /^https:\/\//.test(supportUrl), 'url=' + supportUrl);
+    ck('SUPPORT_CLICK_SKIPPED', true, '已配置地址，跳过点击以免弹出浏览器');
+  } else {
+    await pw.executeJavaScript(`(function(){const e=document.querySelector('[data-a="supportOpen"]');if(e)e.click();})()`).catch(() => {});
+    await sleep(700);
+    const hint = await mw.executeJavaScript(`(function(){
+      const el = document.getElementById('hintBar') || document.querySelector('.hint-bar') || document.querySelector('[class*="hint"]');
+      return el ? el.textContent : '';
+    })()`).catch(() => '');
+    ck('SUPPORT_CLICK_HINT', /暂未设置赞助地址|No sponsorship URL set/.test(String(hint)), 'hint=' + hint);
+  }
 
   // 3. 切英文，按钮文本应跟着变
   await pw.executeJavaScript(`(function(){const e=document.querySelector('[data-a="lang"][data-v="en"]');if(e)e.click();})()`).catch(() => {});

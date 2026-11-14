@@ -466,7 +466,7 @@
                    FEEDBACK_DEFAULT 是「打开反馈地址」的默认值，用户可在设置里覆盖；
                    SUPPORT_URL 留空时点「支持开发」会提示暂未设置（不弹死链）。 */
                 FEEDBACK_DEFAULT:'https://github.com/ryyx7193/floating-reader/issues',
-                SUPPORT_URL:'',
+                SUPPORT_URL:'https://afdian.com/a/Audrey111',
                 KEYS:{ BOOKMARKS:'fb',
                              SKIN:'fs',
                              FONT:'ff',
