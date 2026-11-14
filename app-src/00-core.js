@@ -465,7 +465,7 @@
                 /* 🆕 V4.3.98（开源）：对外入口集中在这里 —— 换仓库或换赞助页只改这两行。
                    FEEDBACK_DEFAULT 是「打开反馈地址」的默认值，用户可在设置里覆盖；
                    SUPPORT_URL 留空时点「支持开发」会提示暂未设置（不弹死链）。 */
-                FEEDBACK_DEFAULT:'https://github.com/OWNER/REPO/issues',
+                FEEDBACK_DEFAULT:'https://github.com/ryyx7193/floating-reader/issues',
                 SUPPORT_URL:'',
                 KEYS:{ BOOKMARKS:'fb',
                              SKIN:'fs',

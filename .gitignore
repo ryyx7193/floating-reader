@@ -21,6 +21,9 @@ _lang*_ud/
 # 内部 AI 编码规范（引用仓库外的上位文档，不对外）
 AGENTS.md
 
+# 个人开发环境配置（含本机 electron 绝对路径）
+.vscode/
+
 # 日志
 *.log
 

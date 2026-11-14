@@ -5,6 +5,25 @@
   "description": "悬浮阅读器（浅水鲸）—— 轻量悬浮式本地阅读器，支持 TXT / EPUB / PDF / Markdown",
   "main": "main.js",
   "author": "MyReader",
+  "license": "AGPL-3.0-or-later",
+  "keywords": [
+    "electron",
+    "reader",
+    "epub",
+    "txt",
+    "floating-window",
+    "desktop-app",
+    "chinese"
+  ],
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ryyx7193/floating-reader.git"
+  },
+  "homepage": "https://github.com/ryyx7193/floating-reader#readme",
+  "bugs": {
+    "url": "https://github.com/ryyx7193/floating-reader/issues"
+  },
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
@@ -51,16 +70,5 @@
   "dependencies": {
     "cheerio": "^1.0.0",
     "iconv-lite": "^0.7.3"
-  },
-  "license": "AGPL-3.0-or-later",
-  "keywords": [
-    "electron",
-    "reader",
-    "epub",
-    "txt",
-    "floating-window",
-    "desktop-app",
-    "chinese"
-  ],
-  "private": false
+  }
 }

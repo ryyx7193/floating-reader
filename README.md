@@ -120,13 +120,25 @@ npx electron tests/live-sweep.js
 - 未做代码签名，Windows SmartScreen 会提示未知发布者
 - 安装包约 116 MB（Electron 运行时占大头）
 
-## 支持这个项目
+## 反馈与支持
+
+**遇到问题**（按推荐顺序）：
+
+1. **GitHub Issues** — https://github.com/ryyx7193/floating-reader/issues
+   软件里「设置 → 反馈 → 打开反馈地址」默认就指向这里。
+2. **邮件** — 3261499309@qq.com
+3. **报之前先导出诊断**：设置 → 反馈 →「导出反馈包」，会把版本、平台、最近日志打成一份文本。
+   贴进 issue 能省掉一半来回。日志里的 URL 查询串与凭据已自动打码，可以放心贴。
+
+**想支持这个项目**：
 
 代码全部开源，功能不设付费墙。如果它对你有用：
 
-- **爱发电**：<!-- TODO 填入爱发电主页 -->
-- **GitHub Sponsors**：<!-- TODO 填入 sponsors 链接 -->
+- **爱发电**：<!-- TODO 填入爱发电主页，例：https://afdian.com/a/xxx -->
+- **GitHub Sponsors**：<!-- TODO 需要 Stripe 账户，大陆个人较难开通，可留空 -->
 - 或只是点个 ⭐ / 提一个带复现步骤的 issue，同样有价值
+
+> 赞助是纯自愿的支持，**不换取任何功能特权，也不构成服务承诺**。
 
 ## 许可
 
