@@ -6,7 +6,19 @@
 一个常驻桌面的小型阅读窗口。无边框、可拖动缩放、能透明融入背景，读本地文件而不打扰手头的事。
 支持 TXT / EPUB / PDF / DOCX / Markdown，全部在本地解析，不依赖在线服务。
 
-<!-- TODO 补 2 张截图：主窗阅读态 / 工具栏小窗 -->
+<p align="center">
+  <img src="assets/screenshots/main.png" width="480" alt="主窗口（未载入时）">
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/toolbar.png" width="190" alt="工具栏小窗">
+  <img src="assets/screenshots/settings.png" width="240" alt="设置面板">
+  <img src="assets/screenshots/shelf.png" width="210" alt="书架面板">
+</p>
+
+<p align="center">
+  <sub>主窗口 · 工具栏 · 设置 · 书架（每个都是独立小窗，可单独摆放）</sub>
+</p>
 
 ## 它解决什么问题
 
