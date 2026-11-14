@@ -7,7 +7,7 @@
 支持 TXT / EPUB / PDF / DOCX / Markdown，全部在本地解析，不依赖在线服务。
 
 <p align="center">
-  <img src="assets/screenshots/main.png" width="480" alt="主窗口（未载入时）">
+  <img src="assets/screenshots/main.png" width="520" alt="主窗口（分页阅读，含章节进度与页码）">
 </p>
 
 <p align="center">
