@@ -33,6 +33,24 @@
 </head>
 <body>
     <div id="app">
+        <!-- 🆕 V4.3.99（主人：「不能只有右下角可以」「拉伸图标也可以优化或者删除」）：
+             四边 + 四角共 8 个拉伸热区，右下角那个斜线三角图标去掉（八个方向都能拉时
+             只标一角反而误导，cursor 变化本身就是提示）。
+             🟥 必须是 #app 的**直接子元素** + position:fixed，不能放 #mainContent 里：
+                ① #mainContent 有 overflow:hidden，负偏移会被裁掉；
+                ② 放里面时 absolute 的包含块是内容区（实测 y≈23），再叠加 --win-pad 偏移
+                   等于又往内容区推 16px —— 正好压在标题栏按钮上（实测 elementFromPoint
+                   六个按钮中心全命中 .rz-n）。挂到这里后坐标相对视口，--win-pad 才是
+                   "窗口边缘到内容区"的真实距离。
+             ⚠️ #resizeGrip 的 id 必须保留：smoke.js 断言 document.getElementById('resizeGrip') 存在。 -->
+        <div id="resizeGrip" class="rz rz-se" data-rz="se"></div>
+        <div class="rz rz-n" data-rz="n"></div>
+        <div class="rz rz-s" data-rz="s"></div>
+        <div class="rz rz-e" data-rz="e"></div>
+        <div class="rz rz-w" data-rz="w"></div>
+        <div class="rz rz-nw" data-rz="nw"></div>
+        <div class="rz rz-ne" data-rz="ne"></div>
+        <div class="rz rz-sw" data-rz="sw"></div>
         <!-- 🐋 V4.3.53（R12-4）伴随模式的「就地浮层」—— 主人 2026-10-13 原话：
              「我们嵌入的时候要怎么点进设置里面设置呢？调整设置呢？应该是在首页或者说顶页，
               有没有更快捷一点的设置方法？而不是点进应用设置里面」。
@@ -166,7 +184,6 @@
                 </div>
             </div>
             <!-- 📑 V4.3.29：原 #bookmarkList（V4.0 遗留的主窗书签浮层）删除 —— 列表升级为独立「书签列表」面板 -->
-            <div id="resizeGrip" class="resize-grip" title="拖动调整窗口大小" data-i18n-title="拖动调整窗口大小"></div>
             <div id="hintToast" class="hint-toast"></div>
             <div id="pickPreview"><span class="swatch"></span><span class="hex"></span><span class="tag"></span></div>
             <div id="pwdModal">

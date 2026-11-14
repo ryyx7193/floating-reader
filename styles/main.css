@@ -498,8 +498,24 @@
         .slider-row.disabled { opacity:0.45; }
         .slider-row.disabled input[type="range"] { cursor:not-allowed; }
 
-        /* 窗口右下角缩放把手 */
-        .resize-grip { position:absolute; right:7px; bottom:7px; width:18px; height:18px; z-index:95; cursor:nwse-resize; background:linear-gradient(135deg, transparent 52%, rgba(120,130,145,0.55) 52%); border-bottom-right-radius:12px; }
+        /* 🆕 V4.3.99：八向拉伸热区（原 .resize-grip 只有右下角一个 18px 斜线三角）。
+           🟥 position 必须是 fixed：热区是 #app 的直接子元素，用 fixed 才相对视口，
+              不受任何祖先的 overflow / 定位上下文影响。
+           🟥 偏移按 --win-pad 算：这个窗口是透明的、投影画在 --win-pad 那块 padding 里，
+              **用户视觉上的"窗口边缘"在 --win-pad 处**。热区从 --win-pad-6 起、12px 宽/高，
+              等于跨越视觉边缘各 6px —— 鼠标移到看起来的边上就命中，与原生窗口手感一致。
+           🟥 尺寸必须小于标题栏按钮的起始 y（实测按钮 y=31~57、热区到 26 为止），
+              否则会抢走关闭/最小化/全屏按钮的点击（V4.3.99 第一版就这么翻的车）。
+           🟥 z-index 高于 #mainContent，否则内容区会把压在边缘上的热区盖掉。 */
+        .rz { position:fixed; z-index:96; }
+        .rz-n { top:calc(var(--win-pad) - 6px); left:28px; right:28px; height:12px; cursor:ns-resize; }
+        .rz-s { bottom:calc(var(--win-pad) - 6px); left:28px; right:28px; height:12px; cursor:ns-resize; }
+        .rz-e { right:calc(var(--win-pad) - 6px); top:28px; bottom:28px; width:12px; cursor:ew-resize; }
+        .rz-w { left:calc(var(--win-pad) - 6px); top:28px; bottom:28px; width:12px; cursor:ew-resize; }
+        .rz-nw { top:calc(var(--win-pad) - 6px); left:calc(var(--win-pad) - 6px); width:14px; height:14px; cursor:nwse-resize; }
+        .rz-ne { top:calc(var(--win-pad) - 6px); right:calc(var(--win-pad) - 6px); width:14px; height:14px; cursor:nesw-resize; }
+        .rz-sw { bottom:calc(var(--win-pad) - 6px); left:calc(var(--win-pad) - 6px); width:14px; height:14px; cursor:nesw-resize; }
+        .rz-se { bottom:calc(var(--win-pad) - 6px); right:calc(var(--win-pad) - 6px); width:14px; height:14px; cursor:nwse-resize; }
 
         /* 轻提示 */
         .hint-toast { position:fixed; left:50%; bottom:18px; transform:translateX(-50%) translateY(20px); background:rgba(20,22,26,0.92); color:#fff; padding:8px 14px; border-radius:var(--r-md); font-size:var(--fs-sm); z-index:var(--z-menu); opacity:0; pointer-events:none; transition:opacity 0.2s ease, transform 0.2s ease; max-width:86vw; text-align:center; }

@@ -120,7 +120,7 @@
         /* 📑 V4.3.29：新增「书签」一行 —— 这张表**严格按 panel.html 的文档顺序**逐条对齐，
            加行不同步改这里，后面所有行的标签会整体串位一位（smoke3 的 fg-watch 断言专守此事）。 */
         '上一章', '下一章', '隐藏/显示', '专注模式', '当前章搜索', '全文搜索', '自动滚动', '取色点', '工具栏', '脱离监控', '目录', '书签', '',
-        '朗读当前章', '语速', '语音', '',
+        '朗读当前章', '语速', '语音', '后台朗读', '',
         /* 🎨 V4.3.69：主题段最前面多了「排版预设」一行（panel.html 里 3 个按钮那行），
            这张表严格按 DOM 顺序对齐，漏补 = 后面所有行整体串位一位。 */
         '排版预设', '已保存主题', '', '',
@@ -145,7 +145,7 @@
         'Auto-close delay', 'Auto contrast',
         /* 📑 V4.3.29：见 zh 表同名注释（顺序必须与 panel.html 的 DOM 行序一致） */
         'Previous chapter', 'Next chapter', 'Hide / show', 'Focus mode', 'Search in chapter', 'Full-text search', 'Auto-scroll', 'Pick point', 'Toolbar', 'Privacy guard', 'Directory', 'Bookmark', '',
-        'Read current chapter', 'Speed', 'Voice', '',
+        'Read current chapter', 'Speed', 'Voice', 'Background playback', '',
         'Layout presets', 'Saved themes', '', '',
         'Manifest URL', '',
         'Open with',

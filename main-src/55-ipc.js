@@ -97,20 +97,36 @@ ipcMain.on('app:quit', (e) => { if (!isTrustedUI(e)) return; app.isQuitting = tr
 ipcMain.on('window:drag-start', (e, p) => startDrag(p && p.x, p && p.y));
 ipcMain.on('window:drag-move', (e, p) => { if (p) dragMoveTo(Number(p.x), Number(p.y)); });
 ipcMain.on('window:drag-end', stopDrag);
-ipcMain.on('window:resize-start', () => {
+ipcMain.on('window:resize-start', (e, p) => {
   if (mainWindow) {
     const b = mainWindow.getBounds();
     resizeBase = { x: b.x, y: b.y, width: b.width, height: b.height };
+    /* 🆕 V4.3.99：记住拖的是哪条边。原来只算右下方向（dx/dy 一律加到 width/height），
+       所以主人反馈「不能只有右下角可以」。缺省 'se' 兼容旧渲染层。 */
+    resizeDir = String((p && p.dir) || 'se');
   }
 });
 ipcMain.on('window:resize-move', (e, p) => {
   if (!mainWindow || !resizeBase) return;
-  const dx = Number(p && p.dx) || 0;
-  const dy = Number(p && p.dy) || 0;
+  const dx = Math.round(Number(p && p.dx) || 0);
+  const dy = Math.round(Number(p && p.dy) || 0);
   const min = mainWindow.getMinimumSize();
-  const w = Math.max(min[0], resizeBase.width + Math.round(dx));
-  const h = Math.max(min[1], resizeBase.height + Math.round(dy));
-  mainWindow.setBounds({ x: resizeBase.x, y: resizeBase.y, width: w, height: h });
+  const d = resizeDir;
+  let x = resizeBase.x, y = resizeBase.y;
+  let w = resizeBase.width, h = resizeBase.height;
+  /* 🟥 拖左/上边时 x/y 必须跟着走，否则窗口会朝反方向"长"出去（右边反而被推走）。
+     宽度先夹到最小值再回算 x，保证被夹住时左边界不会越过右边界。 */
+  if (d.indexOf('e') >= 0) w = Math.max(min[0], resizeBase.width + dx);
+  if (d.indexOf('s') >= 0) h = Math.max(min[1], resizeBase.height + dy);
+  if (d.indexOf('w') >= 0) {
+    w = Math.max(min[0], resizeBase.width - dx);
+    x = resizeBase.x + (resizeBase.width - w);
+  }
+  if (d.indexOf('n') >= 0) {
+    h = Math.max(min[1], resizeBase.height - dy);
+    y = resizeBase.y + (resizeBase.height - h);
+  }
+  mainWindow.setBounds({ x, y, width: w, height: h });
 });
 /* 🟥 V4.3.97 第 3 轮（P2，真缺陷）：原来直接传函数引用，Electron 把 `event`
    塞进首个形参 opts，渲染层传的 {x} 成第二参被忽略 ⇒ pickScreenColor 里

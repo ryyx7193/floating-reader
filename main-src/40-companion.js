@@ -605,6 +605,8 @@ function handleCompanionTick(st) {
        只有“本来就是显示状态”时才动它（同前台监听：免得跟用户手动隐藏/SOS 打架）。 */
     if (mainWindow.isVisible()) {
       try { closeAllPanels(); } catch (e) {}
+      /* 🆕 V4.4.0：伴随模式自动收起也是**被动隐藏** —— 同前台监听，强制停朗读 */
+      try { safeSend(mainWindow, 'window:visibility', false, true); } catch (e) {}
       mainWindow.hide();
       companionAutoHidden = true;
       logToFile('info', '伴随模式：' + (alive ? '目标不在前台/不可见 → 收起' : '目标已关闭 → 收托盘待命'));

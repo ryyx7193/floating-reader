@@ -80,6 +80,7 @@
                     autoUpdateMin: state.autoUpdateMin,
                     isDisguised: state.isDisguised,
                     fgWatchEnabled: state.fgWatchEnabled,
+                    ttsBg: state.ttsBg,
                     fgWatchList: state.fgWatchList,
                     /* 🟥 V4.3.49（R8-1）：开关亮着但监听没跑 — 面板要就地说明（同 shortcutError 口径） */
                     fgWatchError: lastFgWatchError,
@@ -394,6 +395,13 @@
                     }
                     else if(action==='lang') setLanguage(v);
                     else if(action==='fgWatch'){ toggleFgWatch(); }
+                    /* 🆕 V4.4.0：后台朗读开关。只影响「用户主动隐藏」是否停朗读，见 onVisibilityChange */
+                    else if(action==='ttsBg'){
+                        state.ttsBg = !state.ttsBg;
+                        Storage.set(S.TTS_BG, state.ttsBg);
+                        showHint(state.ttsBg ? TT('后台朗读已开启（收进托盘也继续）','Background playback on') : TT('后台朗读已关闭','Background playback off'));
+                        return;
+                    }
                     else if(action==='autoUpdate'){ state.autoUpdate=!state.autoUpdate; Storage.set(S.AUTO_UPDATE,state.autoUpdate); setupAutoUpdate(); showHint(state.autoUpdate?(TT('书架自动追更已开启','Auto-update on')):(TT('书架自动追更已关闭','Auto-update off'))); }
                     else if(action==='autoUpdateMin' && v){ state.autoUpdateMin=normalizeSettingValue(S.AUTO_UPDATE_MIN, v); Storage.set(S.AUTO_UPDATE_MIN,state.autoUpdateMin); setupAutoUpdate(); }
                     else if(action==='fgWatchList'){ setFgWatchList(v); }
@@ -658,7 +666,7 @@
                     setTimeout(function(){ syncTTSPanels(); }, 800);
                 }
                 window.addEventListener('beforeunload', function(){ try{ window.speechSynthesis.cancel(); }catch(e){} });
-                if(window.readerAPI && window.readerAPI.onVisibilityChange) window.readerAPI.onVisibilityChange(v=>{
+                if(window.readerAPI && window.readerAPI.onVisibilityChange) window.readerAPI.onVisibilityChange((v, force)=>{
                     state.isHidden=!v;
                     if(v && state.isGrayEnabled) setWindowOpacity(1);
                     // 隐藏时停掉自动吸色与取样点，避免后台空转
@@ -672,10 +680,18 @@
                         /* 🛡 V4.3.38：判定放宽到「非 idle」—— 用户主动**暂停**时
                            ttsIsPlaying() 为 false，但 ttsStop() 照样会把 paused 清成 idle，
                            而恢复时因为没置标志就不提示，用户不知道"我的暂停被程序结束了"。 */
-                        try{
-                            if(TTS && TTS.state && TTS.state !== 'idle'){ ttsPausedByHide = true; ttsHideWasPlaying = (TTS.state === 'playing'); }
-                        }catch(e){}
-                        try{ ttsStop(); }catch(e){}
+                        /* 🆕 V4.4.0（主人要求「进入托盘继续朗读做成可选功能」）：
+                           开关开着时，**用户主动**隐藏（托盘 / Ctrl+Shift+H）不再停朗读；
+                           **被动**隐藏（前台监听「老板来了」/ 伴随模式自动收起）由主进程带
+                           force=true 推过来，照样强制停 —— 自动躲起来还出声等于当场暴露。
+                           🟥 force 必须由主进程在**隐藏前**单独发一次（见 35-fgwatch / 40-companion），
+                              不能指望 on('hide') 知道是谁触发的 —— 它只是个统一出口。 */
+                        if(force || !state.ttsBg){
+                            try{
+                                if(TTS && TTS.state && TTS.state !== 'idle'){ ttsPausedByHide = true; ttsHideWasPlaying = (TTS.state === 'playing'); }
+                            }catch(e){}
+                            try{ ttsStop(); }catch(e){}
+                        }
                     } else {
                         /* 🛡 V4.3.38：**拆成两个独立的 if**。原先 TTS 提示与「取色循环恢复」
                            共用一条 else-if 链，TTS 分支会把事件吃掉 —— 于是

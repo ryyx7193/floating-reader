@@ -498,6 +498,10 @@
                              FEEDBACK_URL:'ffb',
                              TTS_RATE:'fttr',
                              TTS_VOICE:'fttv',
+                             /* 🆕 V4.4.0：后台朗读 —— 窗口不可见时是否继续朗读。
+                                默认 false = 现状（不可见就停）；开启后用户主动隐藏（托盘 /
+                                Ctrl+Shift+H）继续出声，被动隐藏（前台监听 / 伴随自动收起）仍强制停。 */
+                             TTS_BG:'fttbg',
                              DISGUISE_SKIN:'fdg',
                              /* 🆕 V4.3.86 伪装外观常驻（fdgr）：把伪装皮肤当成**可阅读的皮肤**用 ——
                                 正文按假文档外观渲染，能正常滚动/翻页/选中/用快捷键，且重启后保持。
@@ -679,6 +683,7 @@
             disguiseRead: Storage.get(S.DISGUISE_READ,false),
                     autoUpdate: Storage.get(S.AUTO_UPDATE,false), autoUpdateMin: normalizeSettingValue(S.AUTO_UPDATE_MIN, Storage.get(S.AUTO_UPDATE_MIN,60)),
             fgWatchEnabled: Storage.get(S.FG_WATCH,false), fgWatchList: Storage.get(S.FG_WATCH_LIST,''),
+            ttsBg: Storage.get(S.TTS_BG,false),
             /* 🆕 V4.3.53（R12-2）伴随模式：开关 / 目标程序 / 陪显示时机 / 贴边位置。
                默认全关 —— 动窗口位置这种事必须由用户明确打开（形态2 已获主人确认）。 */
             companionEnabled: Storage.get(S.COMPANION,false), companionTarget: Storage.get(S.COMPANION_TARGET,''),

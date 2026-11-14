@@ -3,6 +3,8 @@
     // 🟥 V4.3.17：伪装皮肤下拉的 change 已上移到「与 type 无关的通用初始化区」（见文件末尾初始化段），
     // 这里不再绑定 —— 它住在 #view-toolbar，挂在 initSettings() 里根本执行不到（本版修的就是这个）。
     $('fgWatchSwitch').addEventListener('click', function(){ this.classList.toggle('active'); send('fgWatch'); });
+    /* 🆕 V4.4.0：后台朗读开关（状态由主窗回写，这里只发动作 + 立刻翻转视觉） */
+    $('ttsBgSwitch').addEventListener('click', function(){ this.classList.toggle('active'); send('ttsBg'); });
     if($('autoUpdateSwitch')){ $('autoUpdateSwitch').classList.toggle('active', !!window.__autoUpdateOn); $('autoUpdateSwitch').addEventListener('click', function(){ this.classList.toggle('active'); send('autoUpdate'); }); }
     if($('autoUpdateMinSelect')) $('autoUpdateMinSelect').addEventListener('change', e=>send('autoUpdateMin', +e.target.value));
     $('fgWatchInput').addEventListener('change', e=>{ send('fgWatchList', e.target.value); });
@@ -158,6 +160,7 @@
       const b=$('disguiseToggleBtn'); if(b) b.textContent = p.isDisguised ? (panelLang==='en'?'Exit disguise':'退出伪装') : (panelLang==='en'?'Enter disguise':'进入伪装');
     }
     if(p.fgWatchEnabled !== undefined) $('fgWatchSwitch').classList.toggle('active', p.fgWatchEnabled);
+    if(p.ttsBg !== undefined) $('ttsBgSwitch').classList.toggle('active', p.ttsBg);
     /* 🟥 V4.3.52（R11-1）：回写前先看一眼"用户是不是正敲着它"。
        #fgWatchInput 用 `change` 上报（失焦 / 回车才提交），而主窗每 1.5 秒
        `syncSettingsPanel()` 把 `state.fgWatchList` 推回来 —— 中间这 1.5 秒里

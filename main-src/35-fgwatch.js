@@ -105,6 +105,9 @@ function handleForegroundLine(name) {
     if (mainWindow.isVisible()) {
       fgAutoHidden = true;
       closeAllPanels();
+      /* 🆕 V4.4.0：这是**被动隐藏**（老板来了自动躲）—— 必须在 hide 之前单独推一次 force，
+         让渲染层强制停朗读。不能指望 on('hide') 知道是谁触发的，它只是统一出口。 */
+      try { safeSend(mainWindow, 'window:visibility', false, true); } catch (e) {}
       mainWindow.hide();
     }
   } else if (fgAutoHidden) {

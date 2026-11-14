@@ -120,7 +120,7 @@
         /* 📑 V4.3.29：新增「书签」一行 —— 这张表**严格按 panel.html 的文档顺序**逐条对齐，
            加行不同步改这里，后面所有行的标签会整体串位一位（smoke3 的 fg-watch 断言专守此事）。 */
         '上一章', '下一章', '隐藏/显示', '专注模式', '当前章搜索', '全文搜索', '自动滚动', '取色点', '工具栏', '脱离监控', '目录', '书签', '',
-        '朗读当前章', '语速', '语音', '',
+        '朗读当前章', '语速', '语音', '后台朗读', '',
         /* 🎨 V4.3.69：主题段最前面多了「排版预设」一行（panel.html 里 3 个按钮那行），
            这张表严格按 DOM 顺序对齐，漏补 = 后面所有行整体串位一位。 */
         '排版预设', '已保存主题', '', '',
@@ -145,7 +145,7 @@
         'Auto-close delay', 'Auto contrast',
         /* 📑 V4.3.29：见 zh 表同名注释（顺序必须与 panel.html 的 DOM 行序一致） */
         'Previous chapter', 'Next chapter', 'Hide / show', 'Focus mode', 'Search in chapter', 'Full-text search', 'Auto-scroll', 'Pick point', 'Toolbar', 'Privacy guard', 'Directory', 'Bookmark', '',
-        'Read current chapter', 'Speed', 'Voice', '',
+        'Read current chapter', 'Speed', 'Voice', 'Background playback', '',
         'Layout presets', 'Saved themes', '', '',
         'Manifest URL', '',
         'Open with',
@@ -413,6 +413,8 @@
     // 🟥 V4.3.17：伪装皮肤下拉的 change 已上移到「与 type 无关的通用初始化区」（见文件末尾初始化段），
     // 这里不再绑定 —— 它住在 #view-toolbar，挂在 initSettings() 里根本执行不到（本版修的就是这个）。
     $('fgWatchSwitch').addEventListener('click', function(){ this.classList.toggle('active'); send('fgWatch'); });
+    /* 🆕 V4.4.0：后台朗读开关（状态由主窗回写，这里只发动作 + 立刻翻转视觉） */
+    $('ttsBgSwitch').addEventListener('click', function(){ this.classList.toggle('active'); send('ttsBg'); });
     if($('autoUpdateSwitch')){ $('autoUpdateSwitch').classList.toggle('active', !!window.__autoUpdateOn); $('autoUpdateSwitch').addEventListener('click', function(){ this.classList.toggle('active'); send('autoUpdate'); }); }
     if($('autoUpdateMinSelect')) $('autoUpdateMinSelect').addEventListener('change', e=>send('autoUpdateMin', +e.target.value));
     $('fgWatchInput').addEventListener('change', e=>{ send('fgWatchList', e.target.value); });
@@ -568,6 +570,7 @@
       const b=$('disguiseToggleBtn'); if(b) b.textContent = p.isDisguised ? (panelLang==='en'?'Exit disguise':'退出伪装') : (panelLang==='en'?'Enter disguise':'进入伪装');
     }
     if(p.fgWatchEnabled !== undefined) $('fgWatchSwitch').classList.toggle('active', p.fgWatchEnabled);
+    if(p.ttsBg !== undefined) $('ttsBgSwitch').classList.toggle('active', p.ttsBg);
     /* 🟥 V4.3.52（R11-1）：回写前先看一眼"用户是不是正敲着它"。
        #fgWatchInput 用 `change` 上报（失焦 / 回车才提交），而主窗每 1.5 秒
        `syncSettingsPanel()` 把 `state.fgWatchList` 推回来 —— 中间这 1.5 秒里

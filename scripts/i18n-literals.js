@@ -112,6 +112,7 @@
       "停止": "Stop",
       "语速": "Speed",
       "语音": "Voice",
+      "后台朗读": "Background playback",
       "去系统装更多语音…": "Install more voices in Windows…",
       "主题": "Themes",
       "排版预设": "Layout presets",

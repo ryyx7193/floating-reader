@@ -136,6 +136,9 @@
           <div class="srow"><span data-i18n="朗读当前章">朗读当前章</span><div><button id="ttsToggleBtn" data-a="ttsToggle" data-i18n="开始/暂停">开始/暂停</button><button data-a="ttsStop" data-i18n="停止">停止</button></div></div>
           <div class="srow"><span data-i18n="语速">语速</span><input type="range" id="ttsRateSlider" min="0.5" max="2" step="0.1" style="width:120px;"><span id="ttsRateValue" style="color:var(--color-muted);font-size:11px;">1.0x</span></div>
           <div class="srow"><span data-i18n="语音">语音</span><select id="ttsVoiceSelect" style="width:150px;"></select></div>
+          <!-- 🆕 V4.4.0：后台朗读开关。开 = 收进托盘 / Ctrl+Shift+H 隐藏后继续朗读；
+               前台监听与伴随模式自动收起仍会强制停（那是被动隐藏，出声会暴露）。 -->
+          <div class="srow"><span data-i18n="后台朗读">后台朗读</span><div class="switch" id="ttsBgSwitch"><div class="knob"></div></div></div>
           <!-- 🔊 V4.3.29：说明「这里为什么只有这几个机械音」+ 一条能一键去装自然语音的路 -->
           <div class="srow"><span></span><div><button data-a="openSpeechSettings" data-i18n="去系统装更多语音…">去系统装更多语音…</button></div></div>
           <div class="hint" id="ttsVoiceHint"></div>

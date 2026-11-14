@@ -25,7 +25,7 @@
                     }
                     clickTimer=setTimeout(()=>{ clickCount=0; focusBeforeTriple=null; }, 280);
                 });
-                let dragging=false, resizing=false, resizeStart=null;
+                let dragging=false, resizing=false, resizeStart=null, resizeDir='se';
                 // 起手阶段（mousedown 后 ~520ms）渲染层让位：主进程在 16ms 轮询光标直接驱动窗口
                 //（跳过 mousemove 的帧对齐等待，起手延迟约减半）；之后恢复 mousemove 驱动保证丝滑。
                 let dragStartupPhase=false;
@@ -34,7 +34,9 @@
                 const setDraggingFlag = on => { try{ document.body.classList.toggle('dragging', !!on); }catch(err){} };
                 document.addEventListener('mousedown', e=>{
                     if(e.button!==0) return;
-                    if(e.target && e.target.closest && e.target.closest('#resizeGrip')){ resizing=true; resizeStart={x:e.screenX,y:e.screenY}; if(window.readerAPI&&window.readerAPI.startResize) window.readerAPI.startResize(); e.preventDefault(); return; }
+                    /* V4.3.99：八向热区统一走 [data-rz]，方向传给主进程（原来只认 #resizeGrip = 右下角） */
+                    const rzEl = e.target && e.target.closest && e.target.closest('[data-rz]');
+                    if(rzEl){ resizing=true; resizeDir=rzEl.getAttribute('data-rz')||'se'; resizeStart={x:e.screenX,y:e.screenY}; if(window.readerAPI&&window.readerAPI.startResize) window.readerAPI.startResize(resizeDir); e.preventDefault(); return; }
                     if(e.target && e.target.closest && e.target.closest('button,input,select,textarea,a')) return;
                     /* 🟥 V4.3.22：「Ctrl + 左键拖动窗口」**已按用户要求删除**。
                        理由（用户原话）：左键本身已经能拖动，Ctrl 那套是多余的，还容易误触。

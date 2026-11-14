@@ -24,9 +24,11 @@ contextBridge.exposeInMainWorld('readerAPI', {
   startDrag: (screenX, screenY) => ipcRenderer.send('window:drag-start', { x: screenX, y: screenY }),
   dragMove: (screenX, screenY) => ipcRenderer.send('window:drag-move', { x: screenX, y: screenY }),
   endDrag: () => ipcRenderer.send('window:drag-end'),
-  startResize: () => ipcRenderer.send('window:resize-start'),
+  /* V4.3.99：带上方向（n/s/e/w/ne/nw/se/sw），主进程据此决定改哪条边 */
+  startResize: (dir) => ipcRenderer.send('window:resize-start', { dir }),
   resizeMove: (dx, dy) => ipcRenderer.send('window:resize-move', { dx, dy }),
-  onVisibilityChange: (cb) => ipcRenderer.on('window:visibility', (e, visible) => cb(visible)),
+  /* V4.4.0：第三个参数 force=true 表示「被动隐藏」（前台监听 / 伴随自动收起），必须强制停朗读 */
+  onVisibilityChange: (cb) => ipcRenderer.on('window:visibility', (e, visible, force) => cb(visible, !!force)),
   /* 🖥 V4.3.53：双击标题栏切全屏。拖拽区那半由主进程的窗口消息钩子兜住，
      这里走的是标题栏里 no-drag 的部分；状态与失败都由主进程回传（规则 41）。 */
   toggleFullScreen: () => ipcRenderer.send('win:fullscreen'),
