@@ -1,0 +1,79 @@
+name: Build & Release
+
+# 推 v* tag 自动出包；也可以在 Actions 页面手动触发（workflow_dispatch）
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '手动构建时用的版本号（仅打 tag 场景可留空）'
+        required: false
+
+permissions:
+  contents: write      # 创建 Release 需要
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: 检出源码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # 🟥 用 npm install 而不是 npm ci：package.json 的元数据（license/keywords/files）
+      #    改过而 lock 没跟着更新时，npm ci 会直接失败。CI 里允许它更新 lock。
+      - name: 安装依赖
+        run: npm install --no-audit --no-fund
+
+      # 🟥 分片源码必须重建：仓库里虽然有生成好的 main.js / scripts/*.js，
+      #    但构建前重建一次能保证产物与分片一致（本地发布链也是先做这一步）。
+      - name: 从分片重建 main.js 与 scripts
+        run: node _build_app.js
+
+      # 🟥 本机开发时 build.electronDist 指向离线缓存 ../electron（CI 上没有这个目录），
+      #    不删掉会导致 electron-builder 找不到运行时。
+      - name: 去掉本地 electronDist（CI 走官方下载）
+        run: |
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));delete p.build.electronDist;fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n');console.log('electronDist removed, electronVersion='+p.build.electronVersion)"
+
+      - name: 静态安全检查（高危模式零容忍）
+        run: node tests/security-scan.js
+
+      - name: 构建 NSIS 安装包
+        run: npx electron-builder --win nsis --publish never
+
+      - name: 构建免安装目录版并打 zip
+        run: |
+          npx electron-builder --win dir --publish never
+          $ver = if ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { "manual" }
+          Compress-Archive -Path "dist/win-unpacked/*" -DestinationPath "floating-reader-$ver-win-portable.zip"
+          Get-ChildItem dist/*.exe, *.zip | Select-Object Name, Length
+
+      - name: 上传构建产物（即使没打 tag 也能下载）
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: |
+            dist/*.exe
+            *.zip
+
+      - name: 创建 Release 并上传
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.exe
+            *.zip
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

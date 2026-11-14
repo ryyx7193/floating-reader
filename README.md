@@ -104,6 +104,33 @@ npm run dist            # 打 NSIS 安装包
 npx electron tests/live-sweep.js
 ```
 
+## 参与开发
+
+```bash
+git clone <本仓库地址>
+cd floating-reader
+npm install
+node _build_app.js      # 改完分片必须重建，否则改的是"看起来改了但没生效"的源
+npm start
+```
+
+**目录约定**：`main-src/`（主进程 16 片）、`app-src/`（渲染层 10 片）、`panel-src/`（面板 6 片）
+是源码真源，`main.js` 与 `scripts/*.js` 是 `_build_app.js` 的生成物。**改分片，不改生成物。**
+
+**提交前建议跑**：
+
+```bash
+node tests/security-scan.js                 # 高危模式必须为 0
+npx electron tests/live-sweep.js            # 67 项实机巡检
+npx electron tests/resize-probe.js          # 八向拉伸
+npx electron tests/rz-drag-real.js          # 拉伸事件链路
+npx electron tests/support-probe.js         # 反馈与赞助入口
+npx electron tests/tts-bg-probe.js          # 后台朗读（无语音环境会 SKIP）
+```
+
+发版：打一个 `v*` tag 推上去，GitHub Actions 会自动构建 Windows 安装包与免安装 zip 并创建 Release
+（见 `.github/workflows/release.yml`）。
+
 会真启动应用、跑 67 项功能巡检（阅读模式 / 字号 / 面板开合 / 搜索 / 全屏 / 语言切换等），
 并断言主窗加载的是本仓库页面、版本号与 `package.json` 一致。
 
@@ -134,11 +161,19 @@ npx electron tests/live-sweep.js
 
 代码全部开源，功能不设付费墙。如果它对你有用：
 
-- **爱发电**：<!-- TODO 填入爱发电主页，例：https://afdian.com/a/xxx -->
-- **GitHub Sponsors**：<!-- TODO 需要 Stripe 账户，大陆个人较难开通，可留空 -->
+- **爱发电**（推荐，有公开主页和赞助记录）：<!-- TODO 注册实名后填入：https://afdian.com/a/你的ID -->
+- **微信 / 支付宝赞赏码**（零手续费）：
+  <!-- TODO 把两张收款码图片放到 assets/donate/ 下，再取消下面两行的注释。
+       注意：收款码会公开在仓库里，任何人都能看到。介意的话只放爱发电链接即可。 -->
+  <!--
+  <img src="assets/donate/wechat.png" width="180" alt="微信赞赏码">
+  <img src="assets/donate/alipay.png" width="180" alt="支付宝赞赏码">
+  -->
+- **GitHub Sponsors**：暂未开通（需要 Stripe 账户，大陆个人主体较难申请）
 - 或只是点个 ⭐ / 提一个带复现步骤的 issue，同样有价值
 
 > 赞助是纯自愿的支持，**不换取任何功能特权，也不构成服务承诺**。
+> 软件里的「设置 → 反馈 → 支持开发」指向同一个入口（`CONFIG.SUPPORT_URL`）。
 
 ## 许可
 
