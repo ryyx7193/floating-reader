@@ -2,9 +2,9 @@
   "name": "floating-reader",
   "productName": "悬浮阅读器",
   "version": "4.4.0",
-  "description": "悬浮阅读器（浅水鲸）—— 轻量悬浮式本地阅读器，支持 TXT / EPUB / PDF / Markdown",
+  "description": "悬浮阅读器（浅水鲸）—— 轻量悬浮式本地阅读器，支持 TXT / EPUB / PDF / DOCX / Markdown",
   "main": "main.js",
-  "author": "MyReader",
+  "author": "ryyx7193",
   "license": "AGPL-3.0-or-later",
   "keywords": [
     "electron",

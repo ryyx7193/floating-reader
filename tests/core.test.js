@@ -1,5 +1,5 @@
 /* 浅水鲸 · 核心单元测试（V4.3.32）
-   用法：node test/core.test.js        （不需要 Electron，不需要联网）
+   用法：node tests/core.test.js        （不需要 Electron，不需要联网）
    退出码：0 = 全绿；1 = 有失败（可直接接进 CI / 发布门禁）
 
    为什么只测这三个模块：
