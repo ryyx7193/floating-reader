@@ -1,0 +1,68 @@
+name: 报告问题
+description: 软件出错、功能不正常、界面异常、崩溃
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。信息填得越全，定位越快。
+
+        报之前建议先在软件里点 **设置 → 反馈 →「导出反馈包」**，
+        它会把版本、系统信息和最近日志打成一份文本，贴进来能省掉一半来回。
+        日志里的网址参数和密钥已自动打码，可以放心贴。
+
+  - type: input
+    id: version
+    attributes:
+      label: 软件版本
+      description: 在「设置 → 反馈」里能看到，形如 4.4.0
+      placeholder: 4.4.0
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: 系统版本
+      description: 例如 Windows 11 23H2 / Windows 10 22H2
+      placeholder: Windows 11 23H2
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 从打开软件开始，一步步写清楚点了什么
+      placeholder: |
+        1. 打开软件，加载一个 txt
+        2. 按 Ctrl+Shift+L 开始朗读
+        3. 点标题栏的最小化
+        4. 恢复窗口后……
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望的结果
+      placeholder: 应该……
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际的结果
+      placeholder: 实际却……
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: 补充信息（可选）
+      description: 截图、日志、反馈包内容，或者你试过哪些操作
+    validations:
+      required: false

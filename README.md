@@ -162,6 +162,8 @@ npx electron tests/tts-bg-probe.js          # 后台朗读（无语音环境会 
 
 有 bug 或者想提建议，去 [Issues](https://github.com/ryyx7193/floating-reader/issues)。软件里「设置 → 反馈 → 打开反馈地址」默认也指向那里。
 
+新建 issue 时会让你选「报告问题」或「功能建议」，按模板填就行。
+
 报之前建议先在「设置 → 反馈」点一下「导出反馈包」，它会把版本、系统信息和最近日志打成一份文本，
 贴进 issue 能省不少来回。日志里的网址参数和密钥已经自动打码，可以放心贴。
 
