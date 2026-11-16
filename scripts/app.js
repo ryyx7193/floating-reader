@@ -525,7 +525,7 @@
                 /* 🆕 V4.3.54（吸色联动）「融入目标配色」开关。普通设置：进备份、恢复默认会清。 */
                 COMPANION_TINT:'fcmt',
                 /* 🆕 V4.3.55（生命周期联动）关闭联动 / 最小化联动。普通设置：进备份、恢复默认会清。
-                   默认值在 state 侧给 true（主人要求的联动语义），存储里没有时按默认走。 */
+                   默认值在 state 侧给 true（用户要求的联动语义），存储里没有时按默认走。 */
                 COMPANION_LINK_CLOSE:'fcmplc', COMPANION_LINK_MIN:'fcmplm',
                 /* 🆕 V4.3.70 页边距（fpm）。普通设置：进备份、恢复默认会清。 */
                 PAGE_MARGIN:'fpm',
@@ -685,13 +685,13 @@
             fgWatchEnabled: Storage.get(S.FG_WATCH,false), fgWatchList: Storage.get(S.FG_WATCH_LIST,''),
             ttsBg: Storage.get(S.TTS_BG,false),
             /* 🆕 V4.3.53（R12-2）伴随模式：开关 / 目标程序 / 陪显示时机 / 贴边位置。
-               默认全关 —— 动窗口位置这种事必须由用户明确打开（形态2 已获主人确认）。 */
+               默认全关 —— 动窗口位置这种事必须由用户明确打开（形态2 已获用户确认）。 */
             companionEnabled: Storage.get(S.COMPANION,false), companionTarget: Storage.get(S.COMPANION_TARGET,''),
             companionMode: Storage.get(S.COMPANION_MODE,'foreground'), companionEdge: Storage.get(S.COMPANION_EDGE,'free'),
-            /* 🆕 V4.3.54：吸色联动。null＝用户从没表态过 —— 开伴随时**联动开一次**（主人原话：
+            /* 🆕 V4.3.54：吸色联动。null＝用户从没表态过 —— 开伴随时**联动开一次**（用户原话：
                「选择跟随模式后，应联动开启对应的吸色模式」）；用户显式关过就一直是关。 */
             companionTint: Storage.get(S.COMPANION_TINT,null),
-            /* 🆕 V4.3.55（生命周期联动）：关闭联动 / 最小化联动，默认**开**（主人要求的联动语义）。 */
+            /* 🆕 V4.3.55（生命周期联动）：关闭联动 / 最小化联动，默认**开**（用户要求的联动语义）。 */
             companionLinkClose: Storage.get(S.COMPANION_LINK_CLOSE,true),
             companionLinkMin: Storage.get(S.COMPANION_LINK_MIN,true),
                 shortcuts: Object.assign({}, DEFAULT_SHORTCUTS, Storage.get(S.SHORTCUTS,{})),
@@ -812,7 +812,7 @@
             };
 
             // ---------- 摘除 V4.0 分窗遗留的「影子 UI」 ----------
-            /* 🧹 V4.3.86（主人：“死代码清理做”）：
+            /* 🧹 V4.3.86（用户：“死代码清理做”）：
                index.html 里那三块内嵌抽屉（#toolbarPanel / .settings-panel / #tocPanel）
                已从 HTML 里**真删掉**，不再靠运行时 removeChild。
                但 dom 缓存里还有 ~40 个引用指向它们（pickerBtn / textOpacitySlider / closeDelaySlider…），
@@ -871,7 +871,7 @@
             // 写回快照里的旧值 —— 用户报的「关掉（重开）后还是会重新计时 / 计时倒退」就是这个。
             // 本机 leveldb 里的铁证：总时长在 14988~15011ms 之间反复跳动、甚至倒退。
             const STAT_KEYS = [];   /* 🗑 V4.3.79：阅读统计已移除，保留排除机制防旧备份把计量键混进设置快照 */
-/* 🗑 V4.3.79：阅读统计已移除 —— 历史数据（时长/日锚点）按主人要求连数据清掉（每次启动兜底清一次） */
+/* 🗑 V4.3.79：阅读统计已移除 —— 历史数据（时长/日锚点）按用户要求连数据清掉（每次启动兜底清一次） */
 try{ localStorage.removeItem('frs'); localStorage.removeItem('frsl'); }catch(e){}
             const isStatKey = k => STAT_KEYS.indexOf(k) >= 0;
             /* 🟥 V4.3.23：把「用户数据」和「只在本机有效的缓存」从设置里分出来 ——
@@ -2506,7 +2506,7 @@ try{ localStorage.removeItem('frs'); localStorage.removeItem('frsl'); }catch(e){
                 state.windowOpacity=val;
                 const alpha=Math.max(0.2, Math.min(1, val/100));
                 dom.mainContent.style.setProperty('--bg-alpha',alpha.toFixed(2));
-                /* 🆕 V4.3.86（主人反馈「透明底降低后按钮不跟随」）：
+                /* 🆕 V4.3.86（用户反馈「透明底降低后按钮不跟随」）：
                    原来 --ui-alpha = 0.55 + 0.38*alpha —— 窗口透到 20% 时它还有 0.63，
                    而背景只有 0.20，于是按钮/抽屉"浮"在半透明背景上，质感完全脱节。
                    现在让它**贴着背景走**：0.08 + 0.88*alpha（100% → 0.96，20% → 0.26），
@@ -2516,7 +2516,7 @@ try{ localStorage.removeItem('frs'); localStorage.removeItem('frsl'); }catch(e){
                 const ui=(0.08+0.88*alpha).toFixed(2);
                 dom.mainContent.style.setProperty('--ui-alpha',ui);
                 try{ document.documentElement.style.setProperty('--ui-alpha',ui); }catch(e){}
-                /* 🔍 V4.3.88（主人：“大部分比较小的字体都很糊”）：
+                /* 🔍 V4.3.88（用户：“大部分比较小的字体都很糊”）：
                    阴影模糊半径是**固定 1px**，字号越小，1px 相对笔画就越粗 —— 12px 正文叠上去就是一团模糊。
                    按字号打折：≥18px 全力 / 15~17px 一半 / <15px 不要（小字靠对比度，不靠阴影）。 */
                 const fsNow = Number(state.fontSize) || 14;
@@ -2704,7 +2704,7 @@ try{ localStorage.removeItem('frs'); localStorage.removeItem('frsl'); }catch(e){
                     }
                 }catch(e){}
             }
-            /* 🖋 V4.3.87（主人：“楷体有点模糊，看能不能优化一下”）：
+            /* 🖋 V4.3.87（用户：“楷体有点模糊，看能不能优化一下”）：
                楷体/行楷的笔画本来就细，而本项目在窗口越透明时会**加强文字阴影**
                （`--text-shadow-strength`，见 applyWindowOpacity）。阴影叠在细笔画上 = 模糊的主要来源。
                所以给它们挂一个 `.font-kai`：关掉阴影 + 字距微松（笔画不粘连）。
@@ -4055,7 +4055,7 @@ if(rebind){
             function closeTopPanel(){ if(window.readerAPI && window.readerAPI.closeTopPanel) window.readerAPI.closeTopPanel(); }
             function togglePanel(type){ if(window.readerAPI && window.readerAPI.togglePanel) window.readerAPI.togglePanel(type); else if(openPanelTypes.has(type)) closePanelType(type); else openPanel(type); }
             function sendPanelData(type,payload){ if(window.readerAPI && window.readerAPI.sendPanelData) window.readerAPI.sendPanelData(type,payload); }
-            /* 🆕 V4.3.86（主人反馈「透明底降低后按钮不跟随」的真正根因）：
+            /* 🆕 V4.3.86（用户反馈「透明底降低后按钮不跟随」的真正根因）：
                透明度控件现在只在**面板小窗**里（主窗那两个内嵌抽屉启动时就被 migrate 掉了），
                而主窗改透明度后**从来没通知过面板** —— 面板的 --bg-alpha 一直停在打开时的值，
                于是主窗越透、面板（含所有按钮）越显得"浮"在上面。
@@ -4243,7 +4243,7 @@ if(rebind){
                     }catch(e){ logRenderError('viewTab sync failed: ' + ((e&&e.message)||e)); }
                     return;
                 }
-                /* 🎨 V4.3.86（主人：“吸色功能加个重置按钮，重置后默认关闭吸色”）
+                /* 🎨 V4.3.86（用户：“吸色功能加个重置按钮，重置后默认关闭吸色”）
                    重置 = 两个吸色模式全关 + 清掉圆点位置 + 颜色/阴影回到默认。
                    🛥 不动窗口透明度与排版 —— 那不是“吸色”吸来的，重置它们会让人以为设置被清空。 */
                 if(action==='pickReset'){
@@ -4722,7 +4722,7 @@ if(rebind){
                         /* 🛡 V4.3.38：判定放宽到「非 idle」—— 用户主动**暂停**时
                            ttsIsPlaying() 为 false，但 ttsStop() 照样会把 paused 清成 idle，
                            而恢复时因为没置标志就不提示，用户不知道"我的暂停被程序结束了"。 */
-                        /* 🆕 V4.4.0（主人要求「进入托盘继续朗读做成可选功能」）：
+                        /* 🆕 V4.4.0（用户要求「进入托盘继续朗读做成可选功能」）：
                            开关开着时，**用户主动**隐藏（托盘 / Ctrl+Shift+H）不再停朗读；
                            **被动**隐藏（前台监听「老板来了」/ 伴随模式自动收起）由主进程带
                            force=true 推过来，照样强制停 —— 自动躲起来还出声等于当场暴露。
@@ -4802,7 +4802,7 @@ if(rebind){
                 });
                 dom.grayToggleBtn.addEventListener('click', toggleGray);
                 dom.focusBtn.addEventListener('click', toggleFocus);
-                /* 🖥 V4.3.53：右上角全屏按钮（主人要求"放到叉附近、专注模式与快捷键旁边"）。
+                /* 🖥 V4.3.53：右上角全屏按钮（用户要求"放到叉附近、专注模式与快捷键旁边"）。
                    与双击标题栏共用 toggleFullScreenFromUI ⇒ 同一条 IPC 链。
                    按钮若在 DOM 里缺失，出声而不是让它静默成死控件（规则 33：不许静默空操作）。 */
                 if(dom.fullscreenBtn) dom.fullscreenBtn.addEventListener('click', toggleFullScreenFromUI);
@@ -5011,13 +5011,13 @@ if(rebind){
             function setFontSize(delta){ state.fontSize=Math.min(CONFIG.MAX_FONT,Math.max(CONFIG.MIN_FONT,state.fontSize+delta)); dom.novelContent.style.fontSize=state.fontSize+'px'; Storage.set(S.FONT,state.fontSize);
                 /* 🔍 V4.3.88：阴影强度现在跟字号挂钩，改字号必须重算，否则停在旧字号那一档 */
                 try{ applyWindowOpacity(state.windowOpacity); }catch(e){} }
-            /* 📖 V4.3.97（主人：「单行」不该是三档循环，分页要另起一个按钮）：
+            /* 📖 V4.3.97（用户：「单行」不该是三档循环，分页要另起一个按钮）：
                原来一个叫「单行」的按钮点一下却进「分页」，标签只写「单行」——
                界面在骗人。现在拆成两个独立开关，各自只管自己的两态，
                当前档位仍由 modeIndicator 显示（📖 阅读 / 📖 第N页 / 📜 滚动）。 */
             function toggleReadMode(){ setReadMode(state.readMode === 'single' ? 'multi' : 'single'); }
             function togglePagedMode(){ setReadMode(state.readMode === 'paged' ? 'multi' : 'paged'); }
-            /* 🔤 V4.3.97（主人：字号有放大缩小，再加一个重置按钮，按钮数就对齐了） */
+            /* 🔤 V4.3.97（用户：字号有放大缩小，再加一个重置按钮，按钮数就对齐了） */
             function resetFontSize(){
                 state.fontSize = CONFIG.DEF_FONT;
                 dom.novelContent.style.fontSize = state.fontSize + 'px';
@@ -5129,10 +5129,10 @@ if(rebind){
              * 🟥 为什么不能复用遮罩：遮罩是一整层假内容（假周报/假代码），盖住真正文，
              * 而且 keydown 里对非 SOS 键一律 stopPropagation。用户要的是"在伪装外观里看书"，
              * 不是"看着假文档、按 Esc 才能回来"。
-             * 🟥 字体跟随皮肤（主人定的）：办公文档=宋体、代码=等宽、表格=等线，
+             * 🟥 字体跟随皮肤（用户定的）：办公文档=宋体、代码=等宽、表格=等线，
              * 都由 CSS 按 body.dsg-<skin> 指定，不覆盖用户设的字号（只换字族与配色）。
              */
-            /* 🎨 V4.3.90（主人：“另外两个皮肤也要做适应性优化”）：正文字色必须**跟皮肤走**。
+            /* 🎨 V4.3.90（用户：“另外两个皮肤也要做适应性优化”）：正文字色必须**跟皮肤走**。
                为什么 CSS 管不了：`applyTextColor` 把颜色写成 **内联 style**（为了能跟随用户自定义），
                内联优先级高于任何类选择器 —— code 皮肤就是这么变成“深底深字、几乎看不见”的。
                所以和字族一样，由 JS 接管，退出时调 applyTextColor 还原用户自己的。 */
@@ -5372,10 +5372,10 @@ if(rebind){
             applyFgWatch();
 
             // ===== 伴随模式（V4.3.53 R12-2）：跟着目标程序一起出现 / 一起收起 + 贴边跟随 =====
-            /* 主人定案的形态（2026-10-12）：**形态2 + 拖走即暂停**
+            /* 定案的形态（2026-10-12）：**形态2 + 拖走即暂停**
                —— 阅读器贴到目标窗口边上跟着走；你把它拖走后就停在原地（设置里「贴回去」恢复）；
                目标关掉 → 收托盘待命（不退出），目标再打开 → 自动回来。
-               🚫 形态3（真塞进别的进程内部）不做：那会牺牲防截屏/透明/取色，正是主人点名要保的。
+               🚫 形态3（真塞进别的进程内部）不做：那会牺牲防截屏/透明/取色，正是点名要保的。
                真正干活的是主进程里那个常驻 PowerShell 观察器（main.js startCompanionWatch）。 */
             function applyCompanion(){
                 if(window.readerAPI && window.readerAPI.setCompanion){
@@ -5395,7 +5395,7 @@ if(rebind){
                 state.companionEnabled = !state.companionEnabled;
                 Storage.set(S.COMPANION, state.companionEnabled);
                 /* 🆕 V4.3.54（吸色联动）：开跟随时若用户从没表态过吸色（null），联动开一次并落账
-                   —— 主人原话「选择跟随模式后，应联动开启对应的吸色模式」。
+                   —— 用户原话「选择跟随模式后，应联动开启对应的吸色模式」。
                    显式 false（用户关过）绝不擅自重开。 */
                 if(state.companionEnabled && state.companionTint === null){
                     state.companionTint = true;
@@ -5482,20 +5482,20 @@ if(rebind){
             }
             /* 主进程推来目标框架主色 → 着在标题栏上（CSS: body.companion-tint .title-bar）。
                rgb 为 null = 明确褪色（伴随关闭 / 吸色关闭）。 */
-            /* 🟥 V4.3.93（主人：「自动吸色不准，WorkBuddy 是黑色的，阅读器却没变黑」）
+            /* 🟥 V4.3.93（用户：「自动吸色不准，目标程序是黑色的，阅读器却没变黑」）
                原来吸到的颜色**只刷标题栏**（CSS: body.companion-tint .title-bar，26% 透明）——
                正文区一点都没变，所以"目标黑、阅读器还是白的"完全符合旧实现。
                现在：目标色按亮度决定混合强度，真正压到 #mainContent 的底色上；
                底色一变暗，正文字色必须自动反色（否则黑底黑字），退出时还给用户自己的设置。 */
             /* 🆕 V4.3.94：把"这次到底吸到了什么颜色"摊给用户看 ——
-               主人上轮说吸色不准，光看效果很难判断是"没吸到"还是"吸错了"，有个色块就能一眼分辨。 */
+               用户上轮说吸色不准，光看效果很难判断是"没吸到"还是"吸错了"，有个色块就能一眼分辨。 */
             function setTintSwatch(rgb){
                 const sw = document.getElementById('companionTintSwatch'); if(!sw) return;
                 if(rgb){ sw.style.background = 'rgb(' + Number(rgb.r) + ',' + Number(rgb.g) + ',' + Number(rgb.b) + ')';
                          sw.title = 'rgb(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ')'; }
                 else { sw.style.background = ''; sw.title = ''; }
             }
-            /* 🆕 V4.3.94（主人：「然后的话要有重置按钮」）：**只重置吸色** ——
+            /* 🆕 V4.3.94（用户：「然后的话要有重置按钮」）：**只重置吸色** ——
                清掉已吸到的颜色、恢复用户自己的配色，让主进程下一拍重新采一次；
                跟随目标 / 时机 / 嵌入位 / 其它开关一律不动。
                ⚠️ 必须同时清主进程的 companionTintLast：否则下一拍采到同一个颜色时
@@ -5567,7 +5567,7 @@ if(rebind){
             }
 
             /* ===== 🐋 V4.3.53（R12-4）伴随模式的「就地」入口 =====
-               主人 2026-10-13 原话：「我们嵌入的时候要怎么点进设置里面设置呢？调整设置呢？
+               用户 2026-10-13 原话：「我们嵌入的时候要怎么点进设置里面设置呢？调整设置呢？
                应该是在首页或者说顶页，有没有更快捷一点的设置方法？而不是点进应用设置里面」。
                体检出来的老路径确实绕：主窗顶栏**连「设置」按钮都没有**（只有 ☰工具栏/专注/全屏/?/✕）
                → 得先点 ☰ 打开工具栏面板 → 再点面板里的 ⚙️设置 → 打开**另一个窗口** →
@@ -5905,7 +5905,7 @@ if(rebind){
                 window.addEventListener('resize', schedule);
             }
             function setupTooltips(){
-                /* 🗑 V4.3.79：阅读统计计时功能已整体移除（主人要求不再记录/显示阅读时长）——
+                /* 🗑 V4.3.79：阅读统计计时功能已整体移除（用户要求不再记录/显示阅读时长）——
                    计时心跳、可见性/输入监听、日锚点落盘与实时推送均随之删除；
                    历史数据在启动时清除，排除机制保留空壳防旧备份混入。 */
 

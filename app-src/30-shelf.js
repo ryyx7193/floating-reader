@@ -1389,7 +1389,7 @@
                 state.windowOpacity=val;
                 const alpha=Math.max(0.2, Math.min(1, val/100));
                 dom.mainContent.style.setProperty('--bg-alpha',alpha.toFixed(2));
-                /* 🆕 V4.3.86（主人反馈「透明底降低后按钮不跟随」）：
+                /* 🆕 V4.3.86（用户反馈「透明底降低后按钮不跟随」）：
                    原来 --ui-alpha = 0.55 + 0.38*alpha —— 窗口透到 20% 时它还有 0.63，
                    而背景只有 0.20，于是按钮/抽屉"浮"在半透明背景上，质感完全脱节。
                    现在让它**贴着背景走**：0.08 + 0.88*alpha（100% → 0.96，20% → 0.26），
@@ -1399,7 +1399,7 @@
                 const ui=(0.08+0.88*alpha).toFixed(2);
                 dom.mainContent.style.setProperty('--ui-alpha',ui);
                 try{ document.documentElement.style.setProperty('--ui-alpha',ui); }catch(e){}
-                /* 🔍 V4.3.88（主人：“大部分比较小的字体都很糊”）：
+                /* 🔍 V4.3.88（用户：“大部分比较小的字体都很糊”）：
                    阴影模糊半径是**固定 1px**，字号越小，1px 相对笔画就越粗 —— 12px 正文叠上去就是一团模糊。
                    按字号打折：≥18px 全力 / 15~17px 一半 / <15px 不要（小字靠对比度，不靠阴影）。 */
                 const fsNow = Number(state.fontSize) || 14;
@@ -1587,7 +1587,7 @@
                     }
                 }catch(e){}
             }
-            /* 🖋 V4.3.87（主人：“楷体有点模糊，看能不能优化一下”）：
+            /* 🖋 V4.3.87（用户：“楷体有点模糊，看能不能优化一下”）：
                楷体/行楷的笔画本来就细，而本项目在窗口越透明时会**加强文字阴影**
                （`--text-shadow-strength`，见 applyWindowOpacity）。阴影叠在细笔画上 = 模糊的主要来源。
                所以给它们挂一个 `.font-kai`：关掉阴影 + 字距微松（笔画不粘连）。

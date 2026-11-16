@@ -525,7 +525,7 @@
                 /* 🆕 V4.3.54（吸色联动）「融入目标配色」开关。普通设置：进备份、恢复默认会清。 */
                 COMPANION_TINT:'fcmt',
                 /* 🆕 V4.3.55（生命周期联动）关闭联动 / 最小化联动。普通设置：进备份、恢复默认会清。
-                   默认值在 state 侧给 true（主人要求的联动语义），存储里没有时按默认走。 */
+                   默认值在 state 侧给 true（用户要求的联动语义），存储里没有时按默认走。 */
                 COMPANION_LINK_CLOSE:'fcmplc', COMPANION_LINK_MIN:'fcmplm',
                 /* 🆕 V4.3.70 页边距（fpm）。普通设置：进备份、恢复默认会清。 */
                 PAGE_MARGIN:'fpm',
@@ -685,13 +685,13 @@
             fgWatchEnabled: Storage.get(S.FG_WATCH,false), fgWatchList: Storage.get(S.FG_WATCH_LIST,''),
             ttsBg: Storage.get(S.TTS_BG,false),
             /* 🆕 V4.3.53（R12-2）伴随模式：开关 / 目标程序 / 陪显示时机 / 贴边位置。
-               默认全关 —— 动窗口位置这种事必须由用户明确打开（形态2 已获主人确认）。 */
+               默认全关 —— 动窗口位置这种事必须由用户明确打开（形态2 已获用户确认）。 */
             companionEnabled: Storage.get(S.COMPANION,false), companionTarget: Storage.get(S.COMPANION_TARGET,''),
             companionMode: Storage.get(S.COMPANION_MODE,'foreground'), companionEdge: Storage.get(S.COMPANION_EDGE,'free'),
-            /* 🆕 V4.3.54：吸色联动。null＝用户从没表态过 —— 开伴随时**联动开一次**（主人原话：
+            /* 🆕 V4.3.54：吸色联动。null＝用户从没表态过 —— 开伴随时**联动开一次**（用户原话：
                「选择跟随模式后，应联动开启对应的吸色模式」）；用户显式关过就一直是关。 */
             companionTint: Storage.get(S.COMPANION_TINT,null),
-            /* 🆕 V4.3.55（生命周期联动）：关闭联动 / 最小化联动，默认**开**（主人要求的联动语义）。 */
+            /* 🆕 V4.3.55（生命周期联动）：关闭联动 / 最小化联动，默认**开**（用户要求的联动语义）。 */
             companionLinkClose: Storage.get(S.COMPANION_LINK_CLOSE,true),
             companionLinkMin: Storage.get(S.COMPANION_LINK_MIN,true),
                 shortcuts: Object.assign({}, DEFAULT_SHORTCUTS, Storage.get(S.SHORTCUTS,{})),

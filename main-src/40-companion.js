@@ -1,12 +1,12 @@
-/* 主人原话：“我们能够嵌进某一个软件或者说页面里面，它能够跟随页面的开启关闭，然后进行运行。
+/* 用户原话：“我们能够嵌进某一个软件或者说页面里面，它能够跟随页面的开启关闭，然后进行运行。
    当然它原本的功能要不受影响，比如说防监察啊，不能截图啊以及隐形。就是透明化还有取色等功能都不能受到影响”
-   形态（2026-10-12 主人以 AskUserQuestion 定案）：
+   形态（2026-10-12 定案）：
      · **形态2 + 拖走即暂停** —— 阅读器自动贴到目标窗口边上、跟着它移动；
        你手动把阅读器拖走之后它就停在原地、不再被拉回（设置里有「重新贴边」按钮）；
      · 「算开着」的判定：目标**窗口可见且在前台**（可设，见 mode）；
      · 目标关掉 → **收进托盘待命**（不退出），目标再打开 → 自动回来；
      · 🚫 形态3（真作为子窗口塞进别的进程）**刻意不做** —— 那会牺牲防截屏/透明/取色，
-       与主人点名的「原功能不受影响」直接冲突。
+       与需求里点名的「原功能不受影响」直接冲突。
    🟥 为什么又是常驻 PowerShell：Electron 拿不到“别的进程的窗口在哪、可不可见、在不在前台”。
    与前台监听**各自一个进程**（不共用）：两者的开关与节拍是独立的（前台监听 700ms 够用，
    贴边跟随要 300ms 才跟手），共用一个会让“关掉一个”连累另一个 —— 代价只是多一个隐藏窗口的
@@ -24,12 +24,12 @@ let companionDockPaused = false;    // 用户自己把窗口拖走了 → 不再
 let companionLastSet = null;        // 我们最后一次**程序化**摆放的坐标（用来识别“用户动过窗口”）
 let companionStderr = '';           // 子进程 stderr 尾巴 —— 退出时用来解释“为什么起不来”
 let companionLastTarget = null;     // 目标窗口最近一次的矩形（贴边用）
-/* 🧲 V4.3.88（主人：跟随模式要像贴在目标身上，想放哪儿就放哪儿）：
+/* 🧲 V4.3.88（用户：跟随模式要像贴在目标身上，想放哪儿就放哪儿）：
    自由跟随模式下记的「窗口相对目标左上角的偏移」。
    用偏移而不用绝对坐标 —— 目标一动，我们按偏移跟着动。 */
 let companionRelOffset = null;
 
-/* V4.3.92c（主人：「跟随着主窗口移动后，阅读器不会跟着移动，它会稍微停顿一下然后再瞬移过去」）
+/* V4.3.92c（用户：「跟随着主窗口移动后，阅读器不会跟着移动，它会稍微停顿一下然后再瞬移过去」）
    根因是**轮询粒度**：目标位置由那个常驻的 shell 循环每 300ms 报一次，一拍才 setBounds 一次 --
    中间 300ms 窗口纹丝不动，然后整段位移一次性跳过去 = "停顿 + 瞬移"。
    降到 120ms（8.3 拍/秒）：循环体本身只做几次 P/Invoke，这个频率不会把它跑热。 */
@@ -123,7 +123,7 @@ function companionWatchScript() {
     '    break',
     '  }',
     '  $fg = 0',
-    /* 🟥 “前台”要**连我们自己一起算**：主人点一下阅读器，前台就变成我们了 ——
+    /* 🟥 “前台”要**连我们自己一起算**：用户点一下阅读器，前台就变成我们了 ——
      若只认目标进程，这一下会立刻判定成“目标不在前台”而把窗口藏起来（自己把自己藏了）。 */
     '  if ($tpid -gt 0 -and $fgp -gt 0 -and ($fgp -eq $tpid -or $fgp -eq $self)) { $fg = 1 }',
     '  [Console]::Out.WriteLine("CMP:run=$run;vis=$vis;fg=$fg;x=$x;y=$y;w=$w;h=$hh;cx=$cx;cy=$cy;cw=$cw;ch=$ck")',
@@ -162,7 +162,7 @@ async function companionTintSample() {
   if (now - companionTintAt < COMPANION_TINT_MS) return;
   companionTintAt = now;
   const own = mainWindow.getBounds();
-  /* 🟥 V4.3.93（主人：「自动吸色不准，WorkBuddy 是黑色的，阅读器却没变黑」）
+  /* 🟥 V4.3.93（用户：「自动吸色不准，目标程序是黑色的，阅读器却没变黑」）
      旧实现只取**外框**顶部 18/34px 两个点、再取**平均**：
        ① 外框顶部含窗口阴影/边框，很多应用在那里是浅色；
        ② 平均会把"深色标题栏 + 浅色图标/文字"混成中间灰 —— 目标明明是纯黑，量出来是灰的；
@@ -509,10 +509,10 @@ function companionDock() {
   const movedByUser = !companionGlideTimer && companionLastSet &&
     (Math.abs(cur.x - companionLastSet.x) > COMPANION_DOCK_TOL || Math.abs(cur.y - companionLastSet.y) > COMPANION_DOCK_TOL);
   if (movedByUser) {
-    /* V4.3.92c（主人：「嵌入位置只有左右上下跟居中，能不能做成……我拖到哪里就在哪里嵌入」）
+    /* V4.3.92c（用户：「嵌入位置只有左右上下跟居中，能不能做成……我拖到哪里就在哪里嵌入」）
        以前非自由跟随下拖窗口 = 暂停贴边（还要用户再点一次「贴回去」）；
        现在**拖动本身就是"换个地方嵌"**：记下相对偏移、自动切成自由跟随、继续跟。
-       这样五种固定位只是"快捷落点"，真正的定位方式是拖 —— 与主人的心智一致。 */
+       这样五种固定位只是"快捷落点"，真正的定位方式是拖 —— 与直觉一致。 */
     if (companionCfg.edge !== 'free') {
       if (companionCfg.edge !== 'off') companionCfg.lastFixedEdge = companionCfg.edge;
       companionCfg.edge = 'free';
@@ -560,14 +560,14 @@ function handleCompanionTick(st) {
   if (want) companionLastTarget = { x: st.x, y: st.y, w: st.w, h: st.h, cx: st.cx, cy: st.cy, cw: st.cw, ch: st.ch };
   else if (!alive) companionLastTarget = null;
 
-  /* 🆕 V4.3.79（主人要求）：伴随模式开启时主窗**置顶**（floating 级），不被其他窗口遮挡；
-     但**目标窗口全屏时让位**（主人明确「跟随模式不能全屏」）——目标矩形铺满屏幕（≥95% 且
+  /* 🆕 V4.3.79（用户要求）：伴随模式开启时主窗**置顶**（floating 级），不被其他窗口遮挡；
+     但**目标窗口全屏时让位**（需求明确「跟随模式不能全屏」）——目标矩形铺满屏幕（≥95% 且
      贴近左上角）视为全屏，此刻取消置顶让目标窗口盖上来，退出全屏下一拍自动恢复。
      专注模式（topFocus）优先级更高，不受让位影响——专心读书是用户更明确的意图。 */
   /* 🟥 V4.3.82 审查修复：全屏判定**必须用物理分辨率（display.size），不能用工作区（workAreaSize）**。
      最大化窗口的 bounds 恰好等于工作区（宽=workArea.width、高=workArea.height、x/y=0）——
      拿工作区当基准会把「最大化」误判成「全屏」，导致用户一把目标窗口最大化，伴随置顶就被
-     错误让位（违反主人「不被遮挡」的要求）。全屏窗口的高度会覆盖任务栏区域（≈size.height），
+     错误让位（违反用户「不被遮挡」的要求）。全屏窗口的高度会覆盖任务栏区域（≈size.height），
      最大化不会，用 size 才能区分。任务栏设成自动隐藏时最大化≈整屏，此时判全屏可接受。 */
   /* 🟥 V4.3.83 审查补：必须用**目标窗口所在的那块屏**的尺寸，不能用主屏 ——
      目标在副屏全屏时，主屏尺寸判定会直接判错（副屏可能更小或更大），
@@ -575,7 +575,7 @@ function handleCompanionTick(st) {
   const disp = screen.getDisplayMatching({ x: st.x, y: st.y, width: st.w, height: st.h });
   const fullW = disp.size.width, fullH = disp.size.height;
   const tgtFullscreen = want && st.w >= fullW * 0.98 && st.h >= fullH * 0.98 && st.x <= 8 && st.y <= 8;
-  /* 🧲 V4.3.88（主人原话：“它那个永远置顶只是在它贴在你那个应用上，永远置顶在那个应用上…
+  /* 🧲 V4.3.88（用户原话：“它那个永远置顶只是在它贴在你那个应用上，永远置顶在那个应用上…
      但如果我套了一件衣服的话，我上面有一个应用的话，它是会盖住我们的阅读窗口的，这个是正常的”）
      ⇒ 置顶是**相对目标**，不是全局。
         · 目标在前台（或我们在前台）→ 压在目标之上（floating）；
@@ -757,7 +757,7 @@ function resumeCompanionDock() {
   return { edge: companionCfg.edge, active: companionActive, resumed: canResume, restored: restored };
 }
 
-/* 🆕 V4.3.55（窗口生命周期联动）主人需求：关闭阅读器 → 目标窗口一起关；
+/* 🆕 V4.3.55（窗口生命周期联动）需求：关闭阅读器 → 目标窗口一起关；
    最小化阅读器 → 目标一起最小化；恢复/打开阅读器 → 目标一起恢复。
    实现方式：对 companionCfg.list 里的目标进程主窗口逐个发系统消息 ——
    close=WM_CLOSE(0x0010，等价点 X，应用自己走保存/退出流程)；
@@ -765,7 +765,7 @@ function resumeCompanionDock() {
    🟥 min/restore 都带 IsIconic 守卫：对**最大化**窗口发 SW_RESTORE 会把它从最大化
    掰回普通态（灾难）；已最小化的再 SW_MINIMIZE 也无意义。
    名单已过 companionNormalizeList 白名单（无引号类字符），这里再做一层转义兜底。 */
-/* 🟥 V4.3.95（主人：「目前联动方面的延迟较大」）实测 `_diag_link_latency.js`：
+/* 🟥 V4.3.95（用户：「目前联动方面的延迟较大」）实测 `_diag_link_latency.js`：
    每次点「关闭联动 / 最小化联动」都要 spawn 一个全新 PowerShell + Add-Type 编译 P/Invoke，
    冷 1092ms / 热 944ms / 热 877ms，**平均 971ms** —— 用户点完阅读器关了，目标要等近一秒才动。
    改成**常驻侧车**：Add-Type 只编译一次，之后从 stdin 读命令，一条动作 ~几毫秒。

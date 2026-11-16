@@ -289,7 +289,7 @@
       "重新贴边": "Re-dock",
       "贴回去": "Dock again",
       "目标关掉后阅读器会收进托盘待命（不退出），目标再打开时自动回来。": "When the target closes, the reader waits in the tray (it does not quit) and returns automatically when the target reopens.",
-      /* 🐋 V4.3.53（R12-4）伴随模式顶栏快捷入口的三条新文案（主人 2026-10-13 追加需求 C）。
+      /* 🐋 V4.3.53（R12-4）伴随模式顶栏快捷入口的三条新文案（2026-10-13 追加需求 C）。
          ⚠️ zh/en 必须同加 —— t(k) 缺 key 是**静默失败**（规则 20）。 */
       "伴随模式（点开就近调整 · 右键直接开关）": "Companion mode (click to adjust here · right-click to toggle)",
       "跟随已暂停": "Following paused",

@@ -13,7 +13,7 @@
             function closeTopPanel(){ if(window.readerAPI && window.readerAPI.closeTopPanel) window.readerAPI.closeTopPanel(); }
             function togglePanel(type){ if(window.readerAPI && window.readerAPI.togglePanel) window.readerAPI.togglePanel(type); else if(openPanelTypes.has(type)) closePanelType(type); else openPanel(type); }
             function sendPanelData(type,payload){ if(window.readerAPI && window.readerAPI.sendPanelData) window.readerAPI.sendPanelData(type,payload); }
-            /* 🆕 V4.3.86（主人反馈「透明底降低后按钮不跟随」的真正根因）：
+            /* 🆕 V4.3.86（用户反馈「透明底降低后按钮不跟随」的真正根因）：
                透明度控件现在只在**面板小窗**里（主窗那两个内嵌抽屉启动时就被 migrate 掉了），
                而主窗改透明度后**从来没通知过面板** —— 面板的 --bg-alpha 一直停在打开时的值，
                于是主窗越透、面板（含所有按钮）越显得"浮"在上面。
@@ -201,7 +201,7 @@
                     }catch(e){ logRenderError('viewTab sync failed: ' + ((e&&e.message)||e)); }
                     return;
                 }
-                /* 🎨 V4.3.86（主人：“吸色功能加个重置按钮，重置后默认关闭吸色”）
+                /* 🎨 V4.3.86（用户：“吸色功能加个重置按钮，重置后默认关闭吸色”）
                    重置 = 两个吸色模式全关 + 清掉圆点位置 + 颜色/阴影回到默认。
                    🛥 不动窗口透明度与排版 —— 那不是“吸色”吸来的，重置它们会让人以为设置被清空。 */
                 if(action==='pickReset'){
@@ -680,7 +680,7 @@
                         /* 🛡 V4.3.38：判定放宽到「非 idle」—— 用户主动**暂停**时
                            ttsIsPlaying() 为 false，但 ttsStop() 照样会把 paused 清成 idle，
                            而恢复时因为没置标志就不提示，用户不知道"我的暂停被程序结束了"。 */
-                        /* 🆕 V4.4.0（主人要求「进入托盘继续朗读做成可选功能」）：
+                        /* 🆕 V4.4.0（用户要求「进入托盘继续朗读做成可选功能」）：
                            开关开着时，**用户主动**隐藏（托盘 / Ctrl+Shift+H）不再停朗读；
                            **被动**隐藏（前台监听「老板来了」/ 伴随模式自动收起）由主进程带
                            force=true 推过来，照样强制停 —— 自动躲起来还出声等于当场暴露。
@@ -760,7 +760,7 @@
                 });
                 dom.grayToggleBtn.addEventListener('click', toggleGray);
                 dom.focusBtn.addEventListener('click', toggleFocus);
-                /* 🖥 V4.3.53：右上角全屏按钮（主人要求"放到叉附近、专注模式与快捷键旁边"）。
+                /* 🖥 V4.3.53：右上角全屏按钮（用户要求"放到叉附近、专注模式与快捷键旁边"）。
                    与双击标题栏共用 toggleFullScreenFromUI ⇒ 同一条 IPC 链。
                    按钮若在 DOM 里缺失，出声而不是让它静默成死控件（规则 33：不许静默空操作）。 */
                 if(dom.fullscreenBtn) dom.fullscreenBtn.addEventListener('click', toggleFullScreenFromUI);
@@ -969,13 +969,13 @@
             function setFontSize(delta){ state.fontSize=Math.min(CONFIG.MAX_FONT,Math.max(CONFIG.MIN_FONT,state.fontSize+delta)); dom.novelContent.style.fontSize=state.fontSize+'px'; Storage.set(S.FONT,state.fontSize);
                 /* 🔍 V4.3.88：阴影强度现在跟字号挂钩，改字号必须重算，否则停在旧字号那一档 */
                 try{ applyWindowOpacity(state.windowOpacity); }catch(e){} }
-            /* 📖 V4.3.97（主人：「单行」不该是三档循环，分页要另起一个按钮）：
+            /* 📖 V4.3.97（用户：「单行」不该是三档循环，分页要另起一个按钮）：
                原来一个叫「单行」的按钮点一下却进「分页」，标签只写「单行」——
                界面在骗人。现在拆成两个独立开关，各自只管自己的两态，
                当前档位仍由 modeIndicator 显示（📖 阅读 / 📖 第N页 / 📜 滚动）。 */
             function toggleReadMode(){ setReadMode(state.readMode === 'single' ? 'multi' : 'single'); }
             function togglePagedMode(){ setReadMode(state.readMode === 'paged' ? 'multi' : 'paged'); }
-            /* 🔤 V4.3.97（主人：字号有放大缩小，再加一个重置按钮，按钮数就对齐了） */
+            /* 🔤 V4.3.97（用户：字号有放大缩小，再加一个重置按钮，按钮数就对齐了） */
             function resetFontSize(){
                 state.fontSize = CONFIG.DEF_FONT;
                 dom.novelContent.style.fontSize = state.fontSize + 'px';

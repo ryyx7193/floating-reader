@@ -180,7 +180,7 @@ async function pickScreenColor(opts) {
     // 采样窗口正下方/正上方紧邻的桌面像素，避免隐藏窗口造成闪烁
     const bounds = mainWindow.getBounds();
     const dBounds = screen.getDisplayMatching(bounds).bounds;
-    /* 🆕 V4.3.86（主人问「吸色点跟吸色的真正判定点是否一致」）：
+    /* 🆕 V4.3.86（用户问「吸色点跟吸色的真正判定点是否一致」）：
        原先 cx 恒等于**窗口水平中线**，而窗口里的取色圆点是可以放在别处的 ——
        于是"圆点指着 A、实际采的是 B"，两者对不上。
        现在渲染层把圆点的屏幕 x 传进来，采样点就落在**圆点正下方 12px**，

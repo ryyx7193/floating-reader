@@ -23,7 +23,7 @@ const AUTO_JUNK_RE = /(^|[-_\s])(nav|navbar|menu|footer|foot|header|topbar|top-n
 /* 容器语义：这些词 ⇒ 更像正文/目录 */
 const AUTO_GOOD_RE = /(content|chapter|article|read|txt|text|novel|book|main|body|detail|show|entry|post|list)/i;
 /* 自动模式下去掉的导航行（**整行完全等于**这些词才删，不做包含匹配，避免误删正文） */
-/* 🧹 V4.3.88（主人：“正文界面偶尔会出现『章节错误，点此报送…』这种与小说无关的东西”）
+/* 🧹 V4.3.88（用户：“正文界面偶尔会出现『章节错误，点此报送…』这种与小说无关的东西”）
  * 站点常往正文里塞一句套话（报送错章 / 请记住本站 / 手机用户请…）。
  * 它不是选择器能解决的 —— 文字就在正文容器里，所以只能在文本层过滤。
  * 🛥 两道安全闸：

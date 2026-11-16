@@ -102,7 +102,7 @@ ipcMain.on('window:resize-start', (e, p) => {
     const b = mainWindow.getBounds();
     resizeBase = { x: b.x, y: b.y, width: b.width, height: b.height };
     /* 🆕 V4.3.99：记住拖的是哪条边。原来只算右下方向（dx/dy 一律加到 width/height），
-       所以主人反馈「不能只有右下角可以」。缺省 'se' 兼容旧渲染层。 */
+       所以用户反馈「不能只有右下角可以」。缺省 'se' 兼容旧渲染层。 */
     resizeDir = String((p && p.dir) || 'se');
   }
 });

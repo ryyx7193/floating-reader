@@ -1,4 +1,4 @@
-            /* 🧹 V4.3.86（主人：“死代码清理做”）：
+            /* 🧹 V4.3.86（用户：“死代码清理做”）：
                index.html 里那三块内嵌抽屉（#toolbarPanel / .settings-panel / #tocPanel）
                已从 HTML 里**真删掉**，不再靠运行时 removeChild。
                但 dom 缓存里还有 ~40 个引用指向它们（pickerBtn / textOpacitySlider / closeDelaySlider…），
@@ -57,7 +57,7 @@
             // 写回快照里的旧值 —— 用户报的「关掉（重开）后还是会重新计时 / 计时倒退」就是这个。
             // 本机 leveldb 里的铁证：总时长在 14988~15011ms 之间反复跳动、甚至倒退。
             const STAT_KEYS = [];   /* 🗑 V4.3.79：阅读统计已移除，保留排除机制防旧备份把计量键混进设置快照 */
-/* 🗑 V4.3.79：阅读统计已移除 —— 历史数据（时长/日锚点）按主人要求连数据清掉（每次启动兜底清一次） */
+/* 🗑 V4.3.79：阅读统计已移除 —— 历史数据（时长/日锚点）按用户要求连数据清掉（每次启动兜底清一次） */
 try{ localStorage.removeItem('frs'); localStorage.removeItem('frsl'); }catch(e){}
             const isStatKey = k => STAT_KEYS.indexOf(k) >= 0;
             /* 🟥 V4.3.23：把「用户数据」和「只在本机有效的缓存」从设置里分出来 ——

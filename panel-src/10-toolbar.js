@@ -121,7 +121,7 @@
     if(p.autoPick !== undefined || p.pickPointMode !== undefined){
       const pickOn = !!(p.autoPick || p.pickPointMode);
       $('pickerBtn').classList.toggle('on', pickOn);
-      /* 🎨 V4.3.86（主人：优化吸色跟吸色重置按钮的联动性）：
+      /* 🎨 V4.3.86（用户：优化吸色跟吸色重置按钮的联动性）：
          两个吸色模式都没开时，「重置吸色」点了没有任何效果 —— 置灰比让人白点一次更诚实。 */
       const rb = $('pickResetBtn');
       if(rb) rb.disabled = !pickOn;
