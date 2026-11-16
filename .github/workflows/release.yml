@@ -57,9 +57,11 @@ jobs:
       - name: 构建免安装目录版并打 zip
         run: |
           npx electron-builder --win dir --publish never
-          $ver = if ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { "manual" }
+          $ver = if ($env:RELEASE_TAG) { $env:RELEASE_TAG } elseif ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { "manual" }
           Compress-Archive -Path "dist/win-unpacked/*" -DestinationPath "floating-reader-$ver-win-portable.zip"
           Get-ChildItem dist/*.exe, *.zip | Select-Object Name, Length
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
 
       - name: 上传构建产物（即使没打 tag 也能下载）
         uses: actions/upload-artifact@v4
