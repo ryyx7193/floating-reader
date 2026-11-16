@@ -93,7 +93,7 @@
         「内容盒宽 == 视口宽」「页步长 == 内容宽 + 栏距」；一旦在这里加 padding/margin/
         max-width，双栏页步长会跟着漂，_v470 那批几何门禁会红，实机会翻页错位。
         （只允许 background / color / font-family / box-shadow —— 这些都不进布局。）
-     ② 字体**跟随皮肤**（主人定的）：办公文档=宋体、代码=等宽、表格=等线。
+     ② 字体**跟随皮肤**（用户定的）：办公文档=宋体、代码=等宽、表格=等线。
         只换字族与配色，**不覆盖用户设的字号**（字号仍由 --font-base 与内联 style 决定）。
      ③ 标题栏一起换色 —— 光换正文而标题栏还是深色鲸鱼风，一眼就露馅。
         标题栏文字本身已由 DISGUISE_META 改成「工作周报.docx - 写字板」之类。
@@ -130,7 +130,7 @@ body.dsg-read.dsg-sheet .content mark.search-highlight { background:#c6efce; col
      ① 外壳全部 pointer-events:none —— 它只是"画上去的框"，不能挡住阅读、翻页、选中；
      ② 假纸面透明 —— 真正文在下面透出来，才叫"里面是我们自己的内容"；
      ③ 给正文区让出蓝条的高度，否则文字会被假蓝条压住。 */
-/* 🛥 V4.3.90（主人：“开启之后就卡住了，其他功能打不开了” + “你这样会把全按钮都覆盖的”）
+/* 🛥 V4.3.90（用户：“开启之后就卡住了，其他功能打不开了” + “你这样会把全按钮都覆盖的”）
    🛥 外壳原来是 `position:fixed; inset:0` —— **铺满整窗**，连标题栏那一条都盖住。
    配合下面把标题栏也隐掉，等于把**唯一的操作入口**一起没了：
    工具栏 / 设置 / 目录 / 跟随 / 专注 / 最小化 / 全屏 / 关闭 全在那里。
@@ -198,12 +198,12 @@ body.dsg-read .content-wrapper {
   width:18px; height:18px; border-radius:3px; background:#fff; color:#217346; font-weight:700; font-size:12px; }
 .disguise-layer.shell.sheet .dg-ribbon .dg-docname { margin-left:auto; opacity:.85; }
 
-/* 🟥 V4.3.87（主人：“不是把整个界面套进去，是把进入专注模式后的**干净页面**套进去”）
+/* 🟥 V4.3.87（用户：“不是把整个界面套进去，是把进入专注模式后的**干净页面**套进去”）
    常驻伪装 = 专注模式那种干净页面 + 假外壳。
    所以这里把**所有自有 chrome 全部隐掉**（标题栏 / 拖动条 / 翻章行 / 标签栏 / 状态行 / 失败条 / 伴随条），
    只留正文。顶部那条蓝栏由假外壳提供 —— 这样看起来就是一份 Word 文档，没有任何阅读器痕迹。
    🛥 标题栏隐掉后没有关闭按钮：退出用快捷键（同一个开关）或托盘，与专注模式一致。 */
-/* 🛥 V4.3.90b（主人：“直接把头顶的状态栏套进来…已经不像一个工作文档了，
+/* 🛥 V4.3.90b（用户：“直接把头顶的状态栏套进来…已经不像一个工作文档了，
    你还不如设一个退出键”）。
    所以：标题栏**还是藏掉**（保持干净文档外观），退出靠**一个小按钮**（.dg-exit）。
    拖动靠 #focusDragBar（透明拖拽热区，看不见但能拖窗口）。 */
@@ -221,13 +221,13 @@ body.dsg-read #titleText { display:none !important; }
    高 14px、看不见、不挡正文（外壳 pointer-events:none，事件会穿过去命中它）。 */
 body.dsg-read #focusDragBar { display:block !important; }
 
-/* 🎨 V4.3.91（主人：“阅读窗口的颜色一定要跟主题匹配…或者常驻的那个皮肤匹配”）：
+/* 🎨 V4.3.91（用户：“阅读窗口的颜色一定要跟主题匹配…或者常驻的那个皮肤匹配”）：
    常驻皮肤开着时，**整个阅读窗**的底色必须跟皮肤走 ——
    用户主题的背景色是内联写在 #mainContent 上的（applyBgColorRGB），
    必须用 `!important` 才压得过内联自定义属性。
    🛥 同时强制 `--bg-alpha:1`：半透明的“Word 文档”一眼就穿帮。 */
 body.dsg-read #mainContent { --bg-alpha:1 !important; }
-/* 📄 V4.3.91b（主人：“左右两边没有页面栏，只有一个阅读窗口的边”）：
+/* 📄 V4.3.91b（用户：“左右两边没有页面栏，只有一个阅读窗口的边”）：
    文字不能顶到窗口边 —— 用 **chunk 外边距**收进 44px。
    🛥 不能用 .content 的 padding：分页页步长按滚动容器实测宽度算，
      动它会把每一“页”整体挪位；chunk margin 只改文字位置，几何不变。 */
@@ -247,7 +247,7 @@ body.dsg-read.dsg-sheet #mainContent { --bg-r:255 !important; --bg-g:255 !import
 body.dsg-read .content-wrapper,
 body.dsg-read .content { background:transparent !important; box-shadow:none !important; }
 
-/* 🚪 V4.3.91c（主人：“取消按钮要做成适配该皮肤的样式，
+/* 🚪 V4.3.91c（用户：“取消按钮要做成适配该皮肤的样式，
    放在窗口的右上角正常的打叉的位置”）：
    就是一个正常窗口的关闽键：无底色、悬停才出底，
    **配色跟着各自皮肤的 chrome 走**（word 蓝条上白字 / code 标签栏上浅灰 /
@@ -330,7 +330,7 @@ body.dsg-read .title-bar { -webkit-app-region:drag; }
 /* 正文区上下不再被自有 chrome 挤占 */
 body.dsg-read #mainContent { padding:0 !important; }
 
-/* 🟥 V4.3.92b（主人：「左右两边是留空的……上下状态栏超出了阅读区，左右栏没有内容，结构非常奇怪」）
+/* 🟥 V4.3.92b（需求：「左右两边是留空的……上下状态栏超出了阅读区，左右栏没有内容，结构非常奇怪」）
    根因是**三层内衬叠出来的**，不是一处：
      · `#app` 有 `padding: var(--win-pad)`（默认 20px）—— 这是给窗口投影/圆角留的透明边；
      · `#mainContent` 还有 1px 边框 + `--r-window` 圆角 + 投影 —— 一张"卡片"；
@@ -346,7 +346,7 @@ body.dsg-read #mainContent { border:0 !important; border-radius:0 !important; bo
    正文直接钻到蓝条/标尺底下（截图实测：第一行被切成半截）。 */
 body.dsg-read .content-wrapper { padding-left:0 !important; padding-right:0 !important; }
 
-/* 🖥 V4.3.87（主人：专注模式界面要跟当前皮肤颜色做适配）
+/* 🖥 V4.3.87（用户：专注模式界面要跟当前皮肤颜色做适配）
    专注模式下窗口没有标题栏、没有按钮，只剩正文 —— 这时"边框/提示色"是唯一还能体现
    "我现在是哪个伪装皮肤"的地方。这里给三套皮肤各一条**极淡**的内描边：
    存在感只够暗示边界，不会破坏沉浸，也不会在 Word 白纸上看出一条突兀的色带。

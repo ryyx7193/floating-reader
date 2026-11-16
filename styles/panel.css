@@ -53,7 +53,7 @@
   .body::-webkit-scrollbar-track, #logContent::-webkit-scrollbar-track { background:transparent; }
   .body::-webkit-scrollbar-corner, #logContent::-webkit-scrollbar-corner { background:transparent; }
 
-  /* 🎨 V4.3.89（主人：“对所有窗口的界面/样式/字体做全面优化，保证风格统一”）
+  /* 🎨 V4.3.89（用户：“对所有窗口的界面/样式/字体做全面优化，保证风格统一”）
      🛥 **面板里一直没有基础 button 规则** ——
      只有 7 个容器（.srow/.searchbox/.src-acts/.lib-acts/.lib-add/.shelf-actions/.bookmark-actions）
      各自重写了一遍同一套样式（其中 4 处逐字相同），
@@ -322,7 +322,7 @@
   .shelf-item .shelf-actcard:hover { border-color:var(--color-primary); color:var(--color-primary); }
   /* 🎨 V4.3.63：.ic 里现在是线条 SVG（不再是 emoji 字符）—— 保留 22px 固定槽位保证四张卡等宽，
      尺寸与颜色走 styles/icons.css 的 --ico-size。 */
-  /* 📚 V4.3.91（主人截图：卡片上四个按钮看不清是什么）：
+  /* 📚 V4.3.91（用户截图：卡片上四个按钮看不清是什么）：
      原因是图标槽**写死 22px**，卡片宽 280 时四等分后每张只剩 ~54px，
      扣掉内边距 8 + 图标 22 + 间隔 3 ⇒ **文字只有 21px**，「换源」两个字需要 22px
      ⇒ 正好被 ellipsis 截成「换.」。四张卡本来就是 flex:1 1 0 等宽，
@@ -422,7 +422,7 @@
     * { transition:none !important; animation:none !important; }
   }
 
-/* 🧹 V4.3.86：设置面板的「维护类」分组默认收起（主人要求精简设置面板）。
+/* 🧹 V4.3.86：设置面板的「维护类」分组默认收起（需求精简设置面板）。
    只加 class、不动 DOM —— 收起是 display:none，控件仍在，门禁照样找得到。 */
 #view-settings .section.foldable > h3 { cursor:pointer; user-select:none; display:flex; align-items:center; gap:6px; }
 #view-settings .section.foldable > h3::before {
@@ -476,7 +476,7 @@
 #view-toolbar .btn:disabled { opacity:0.42; cursor:default; }
 #view-toolbar .btn:disabled:hover { background:rgb(var(--surface-2-rgb) / var(--ui-alpha)); }
 
-/* 🖥 V4.3.87（主人：主窗已有跟随入口，设置里不需要了）
+/* 🖥 V4.3.87（用户：主窗已有跟随入口，设置里不需要了）
    🟥 **只隐藏，不删 DOM**：panel-src 里 companionSwitch / companionInput / companionModeSelect /
       companionEdgeSelect / companionLinkCloseSwitch / companionLinkMinSwitch / companionTintSwitch /
       companionRedockBtn / companionDetectBtn 全都有**无守卫**的 addEventListener，

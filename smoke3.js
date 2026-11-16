@@ -149,7 +149,7 @@ app.whenReady().then(async () => {
   if (s.protectTestBtn !== true) problems.push('设置里缺少「脱监自检」按钮（V4.3.20）');
   if (tb.statsSectionRemoved !== true) problems.push('阅读统计区块应已移除');   /* 🗑 V4.3.79 */
   /* 📚 V4.3.86：「全文」「书源」两个按钮已并入书架面板的 tab，工具栏少了 2 个。
-     阈值从 15 降到 13；不要反过来把按钮加回去——那是主人要的精简。 */
+     阈值从 15 降到 13；不要反过来把按钮加回去——那是当初要的精简。 */
   if (!(tb.buttons >= 13)) problems.push('toolbar button count = ' + tb.buttons);
   /* 📑 V4.3.29 书签重构的回归锁：
      以前「工具条书签按钮 + 主窗 #bookmarkList 浮层」是两套死重 UI（用户原话：把书签做成快捷键、
