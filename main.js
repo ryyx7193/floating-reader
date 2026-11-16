@@ -53,7 +53,7 @@ app.on('web-contents-created', (e, wc) => {
     wc.setWindowOpenHandler(({ url }) => { openSafeExternal(url); return { action: 'deny' }; });
     /* 🟥 V4.3.97 第 3 轮（P1，实测复现）：S-2 第一版只按**文件名后缀**放行，
        实测 `file://evilhost/index.html`、`file:///C:/Windows/System32/index.html`、
-       `file:///C:/Users/RYYX/Downloads/index.html` 全部返回 true ⇒ 白名单形同虚设，
+       `file:///C:/Users/<用户名>/Downloads/index.html` 全部返回 true ⇒ 白名单形同虚设，
        任意本地/UNC 同名 HTML 都能加载并沿用主窗 preload 的完整 readerAPI。
        现在改为：① 必须是 file: 且 hostname 为空（挡 UNC/远程主机）；
        ② 解码后的绝对路径必须**落在本应用目录内**且文件名恰为 index.html / panel.html。
@@ -1086,7 +1086,7 @@ function registerHideShortcut(accel) {
   }
 }
 
-// 老板模式（伪装）的全局快捷键：窗口没有焦点时也得能一键切过去。
+// 伪装外观的全局快捷键：窗口没有焦点时也得能一键切过去。
 // 主进程只负责转发，具体开关在渲染层（scripts/app.js）。
 function registerDisguiseShortcut(accel) {
   /* 🛡 V4.3.38：与 registerHideShortcut 同口径 ——
@@ -1102,9 +1102,9 @@ function registerDisguiseShortcut(accel) {
     try {
       if (prev && globalShortcut.register(prev, () => notifyMainWindow('app:disguise'))) currentDisguiseAccel = prev;
     } catch (e) {}
-    logToFile('error', '老板模式快捷键注册失败（已回滚到旧键）：' + next);
+    logToFile('error', '伪装快捷键注册失败（已回滚到旧键）：' + next);
   } catch (e) {
-    logToFile('error', '老板模式快捷键注册异常：' + ((e && e.message) || e));
+    logToFile('error', '伪装快捷键注册异常：' + ((e && e.message) || e));
   }
 }
 
@@ -1216,7 +1216,7 @@ function handleForegroundLine(name) {
     if (mainWindow.isVisible()) {
       fgAutoHidden = true;
       closeAllPanels();
-      /* 🆕 V4.4.0：这是**被动隐藏**（老板来了自动躲）—— 必须在 hide 之前单独推一次 force，
+      /* 🆕 V4.4.0：这是**被动隐藏**（被动隐藏）—— 必须在 hide 之前单独推一次 force，
          让渲染层强制停朗读。不能指望 on('hide') 知道是谁触发的，它只是统一出口。 */
       try { safeSend(mainWindow, 'window:visibility', false, true); } catch (e) {}
       mainWindow.hide();
@@ -1889,7 +1889,7 @@ function handleCompanionTick(st) {
         下一拍就会把窗口从铺满整屏的状态挪到目标旁边 ＝ 当场破坏全屏（而 mainFullScreen
         还记着"在全屏"⇒ 再双击一次会"退出"到一个本来就不是全屏的状态）；
         若让收起照跑，则人正读得入神时窗口被自动藏掉。所以全屏期间**既不吸附、也不收起/恢复**。
-     ② SOS（uiHiddenState.sos）：老板键藏起来的窗口，不许伴随模式自己叫回来。
+     ② SOS（uiHiddenState.sos）：SOS 键藏起来的窗口，不许伴随模式自己叫回来。
      这与既有「防窥优先」（fgAutoHidden / privacyHiddenBy）同一个道理：
      **用户明确表达的意图 > 自动化**。退出全屏 / 解除 SOS 之后，下一拍照常接管。 */
   if (mainFullScreen) return;
@@ -3850,7 +3850,7 @@ function safeDialogPath(raw) {
     if (!p) return undefined;
     if (/(^|[\\/])\.\.([\\/]|$)/.test(p)) return undefined;
     /* 🟥 V4.3.97（第 2 轮复审）：Windows 路径大小写不敏感，原来的 startsWith 比较
-       会把 c:\users\ryyx\desktop\x.txt 误判成"目录外"丢弃；另外只放行 userData+home
+       会把 c:\users\<用户名>\desktop\x.txt 误判成"目录外"丢弃；另外只放行 userData+home
        会把用户重定向到 D 盘/网络的"上次保存路径"一律丢。改用 path.relative 判越界
        （它自己处理盘符大小写与 ..），并把桌面/文档/下载一并纳入允许根。 */
     const roots = ['userData', 'home', 'desktop', 'documents', 'downloads']
@@ -3959,7 +3959,7 @@ function fetchJsonUrl(urlStr, timeout) {
     .catch(e => { throw new Error(e && e.message === 'JSON_PARSE_FAILED' ? TT('版本清单不是有效 JSON','Release manifest is not valid JSON') : ((e && e.message) || String(e))); });
 }
 
-/* 🛡 V4.3.37：伪装（老板模式）时把窗口标题与托盘名一起换掉。
+/* 🛡 V4.3.37：伪装外观时把窗口标题与托盘名一起换掉。
    原先伪装只画 DOM 层（z-index:700 能盖住窗内一切），但**盖不住操作系统级的标题文本** ——
    悬停任务栏 / Alt-Tab 一眼就能看到「浅水鲸 · Vx.y.z 正式版」，伪装等于白做。 */
 /* 🛡 V4.3.39：伪装时连**图标**一起换 —— 标题与托盘名都改了，任务栏/托盘图标还是鲸鱼照样穿帮。
@@ -4120,7 +4120,7 @@ function openFileFromOs(filePath) {
     if (!mainWindow.isVisible()) mainWindow.show();
     mainWindow.setOpacity(1);
     mainWindow.focus();
-    /* 🟥 V4.3.72：argv 里的路径可能带重复分隔符（实测 C://Users//RYYX//…），
+    /* 🟥 V4.3.72：argv 里的路径可能带重复分隔符（实测 C://Users//<用户名>//…），
        读盘没问题（Windows 容忍），但日志里的路径没法直接复制去资源管理器打开。 */
     logToFile('info', 'opened from system: ' + path.normalize(filePath));
   }).catch(err => {

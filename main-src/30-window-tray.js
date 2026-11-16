@@ -173,7 +173,7 @@ function registerHideShortcut(accel) {
   }
 }
 
-// 老板模式（伪装）的全局快捷键：窗口没有焦点时也得能一键切过去。
+// 伪装外观的全局快捷键：窗口没有焦点时也得能一键切过去。
 // 主进程只负责转发，具体开关在渲染层（scripts/app.js）。
 function registerDisguiseShortcut(accel) {
   /* 🛡 V4.3.38：与 registerHideShortcut 同口径 ——
@@ -189,9 +189,9 @@ function registerDisguiseShortcut(accel) {
     try {
       if (prev && globalShortcut.register(prev, () => notifyMainWindow('app:disguise'))) currentDisguiseAccel = prev;
     } catch (e) {}
-    logToFile('error', '老板模式快捷键注册失败（已回滚到旧键）：' + next);
+    logToFile('error', '伪装快捷键注册失败（已回滚到旧键）：' + next);
   } catch (e) {
-    logToFile('error', '老板模式快捷键注册异常：' + ((e && e.message) || e));
+    logToFile('error', '伪装快捷键注册异常：' + ((e && e.message) || e));
   }
 }
 

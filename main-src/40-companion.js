@@ -544,7 +544,7 @@ function handleCompanionTick(st) {
         下一拍就会把窗口从铺满整屏的状态挪到目标旁边 ＝ 当场破坏全屏（而 mainFullScreen
         还记着"在全屏"⇒ 再双击一次会"退出"到一个本来就不是全屏的状态）；
         若让收起照跑，则人正读得入神时窗口被自动藏掉。所以全屏期间**既不吸附、也不收起/恢复**。
-     ② SOS（uiHiddenState.sos）：老板键藏起来的窗口，不许伴随模式自己叫回来。
+     ② SOS（uiHiddenState.sos）：SOS 键藏起来的窗口，不许伴随模式自己叫回来。
      这与既有「防窥优先」（fgAutoHidden / privacyHiddenBy）同一个道理：
      **用户明确表达的意图 > 自动化**。退出全屏 / 解除 SOS 之后，下一拍照常接管。 */
   if (mainFullScreen) return;

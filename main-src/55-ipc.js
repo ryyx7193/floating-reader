@@ -167,7 +167,7 @@ function safeDialogPath(raw) {
     if (!p) return undefined;
     if (/(^|[\\/])\.\.([\\/]|$)/.test(p)) return undefined;
     /* 🟥 V4.3.97（第 2 轮复审）：Windows 路径大小写不敏感，原来的 startsWith 比较
-       会把 c:\users\ryyx\desktop\x.txt 误判成"目录外"丢弃；另外只放行 userData+home
+       会把 c:\users\<用户名>\desktop\x.txt 误判成"目录外"丢弃；另外只放行 userData+home
        会把用户重定向到 D 盘/网络的"上次保存路径"一律丢。改用 path.relative 判越界
        （它自己处理盘符大小写与 ..），并把桌面/文档/下载一并纳入允许根。 */
     const roots = ['userData', 'home', 'desktop', 'documents', 'downloads']

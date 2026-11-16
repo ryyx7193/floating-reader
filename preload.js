@@ -35,7 +35,7 @@ contextBridge.exposeInMainWorld('readerAPI', {
   onFullscreenChange: (cb) => ipcRenderer.on('window:fullscreen', (e, on) => cb(on)),
   onFullscreenFailed: (cb) => ipcRenderer.on('window:fullscreen-failed', (e, detail) => cb(detail)),
   onAppHover: (cb) => ipcRenderer.on('app:hover', (e, hovered) => cb(hovered)),
-  // 老板模式：全局快捷键（主进程）→ 渲染层开关伪装
+  // 伪装外观：全局快捷键（主进程）→ 渲染层开关伪装
   onDisguiseToggle: (cb) => ipcRenderer.on('app:disguise', () => cb()),
   // 🛡 V4.3.37：伪装时把窗口标题/托盘名也换掉（DOM 层盖不住任务栏与 Alt-Tab 的标题）
   setDisguiseTitle: (payload) => ipcRenderer.send('app:disguise-title', payload),

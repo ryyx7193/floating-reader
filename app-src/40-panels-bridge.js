@@ -339,7 +339,7 @@
                        原写法：`if(TTS.state!=='idle'){ ttsStop(); ttsPlay(); }`，代价有两个：
                          ① **播放中**调语速 → 从第 1 段重新念（整个朗读进度丢光，长章等于从头再来）；
                          ② **暂停中**调语速 → 用户从没要求播放，程序却自己从头出声
-                            （对"摸鱼"场景是隐私事故：老板就在旁边，你只是想调慢一点）。
+                            （这是隐私事故：人就在旁边，你只是想调慢一点）。
                        而 tts.js 的 speakNext() 每条分片都会重新读 ctx.getRate()，
                        语速**本来就会在下一段自然生效**（分片上限 200 字，体感几秒）——
                        这次重启既没必要又有害。
@@ -582,7 +582,7 @@
                     if(window.readerAPI.onPanelClosed) window.readerAPI.onPanelClosed(function(type){ openPanelTypes.delete(type); });
                     if(window.readerAPI.onPanelsAllClosed) window.readerAPI.onPanelsAllClosed(function(){ openPanelTypes.clear(); });
                     /* 🆘 V4.3.28 修复：主进程全局快捷键（Ctrl+Shift+H 等，窗口失焦也生效）转发来的
-                       app:sos 事件此前从未绑定 —— 老板键在最需要它的时候（阅读器不在前台）完全没反应。
+                       app:sos 事件此前从未绑定 —— 这个键在最需要它的时候（阅读器不在前台）完全没反应。
                        这里补上；注意与页面 keydown 分支互补不重复：globalShortcut 注册成功时按键
                        会被系统吞掉、页面收不到 keydown；注册失败时才走页面分支（仅前台生效）。 */
                     if(window.readerAPI.onSos) window.readerAPI.onSos(function(){ toggleSOS(); });
@@ -682,7 +682,7 @@
                            而恢复时因为没置标志就不提示，用户不知道"我的暂停被程序结束了"。 */
                         /* 🆕 V4.4.0（用户要求「进入托盘继续朗读做成可选功能」）：
                            开关开着时，**用户主动**隐藏（托盘 / Ctrl+Shift+H）不再停朗读；
-                           **被动**隐藏（前台监听「老板来了」/ 伴随模式自动收起）由主进程带
+                           **被动**隐藏（前台监听「指定程序切到前台」/ 伴随模式自动收起）由主进程带
                            force=true 推过来，照样强制停 —— 自动躲起来还出声等于当场暴露。
                            🟥 force 必须由主进程在**隐藏前**单独发一次（见 35-fgwatch / 40-companion），
                               不能指望 on('hide') 知道是谁触发的 —— 它只是个统一出口。 */
@@ -1047,4 +1047,4 @@
                 syncSettingsPanel();
             }
 
-            // ===== 老板模式（伪装）=====
+            // ===== 伪装外观 =====

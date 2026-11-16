@@ -246,7 +246,7 @@ app.whenReady().then(async () => {
     await R.refreshTabs();
     out.tabsRendered = true;
 
-    // 老板模式（伪装层）：三种皮肤都要能画出来，退出要擦干净
+    // 伪装层：三种皮肤都要能画出来，退出要擦干净
     out.disguiseModule = !!window.ReaderDisguise;
     out.disguiseSkins = window.ReaderDisguise ? window.ReaderDisguise.SKINS.join(',') : '';
     const dg = {};

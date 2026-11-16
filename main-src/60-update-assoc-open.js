@@ -4,7 +4,7 @@ function fetchJsonUrl(urlStr, timeout) {
     .catch(e => { throw new Error(e && e.message === 'JSON_PARSE_FAILED' ? TT('版本清单不是有效 JSON','Release manifest is not valid JSON') : ((e && e.message) || String(e))); });
 }
 
-/* 🛡 V4.3.37：伪装（老板模式）时把窗口标题与托盘名一起换掉。
+/* 🛡 V4.3.37：伪装外观时把窗口标题与托盘名一起换掉。
    原先伪装只画 DOM 层（z-index:700 能盖住窗内一切），但**盖不住操作系统级的标题文本** ——
    悬停任务栏 / Alt-Tab 一眼就能看到「浅水鲸 · Vx.y.z 正式版」，伪装等于白做。 */
 /* 🛡 V4.3.39：伪装时连**图标**一起换 —— 标题与托盘名都改了，任务栏/托盘图标还是鲸鱼照样穿帮。
@@ -165,7 +165,7 @@ function openFileFromOs(filePath) {
     if (!mainWindow.isVisible()) mainWindow.show();
     mainWindow.setOpacity(1);
     mainWindow.focus();
-    /* 🟥 V4.3.72：argv 里的路径可能带重复分隔符（实测 C://Users//RYYX//…），
+    /* 🟥 V4.3.72：argv 里的路径可能带重复分隔符（实测 C://Users//<用户名>//…），
        读盘没问题（Windows 容忍），但日志里的路径没法直接复制去资源管理器打开。 */
     logToFile('info', 'opened from system: ' + path.normalize(filePath));
   }).catch(err => {
