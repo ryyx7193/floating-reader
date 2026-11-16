@@ -4,11 +4,15 @@ name: Build & Release
 on:
   push:
     tags: ['v*']
-  # 🟥 这里必须**不写任何子项**。原先写了 inputs.version 但漏了 `type` ——
-  #    GitHub 的 workflow schema 里 workflow_dispatch.inputs.<id>.type 是必填，
-  #    缺了会让整个手动触发失效：文件照样能被列出、Actions 页面也显示 workflow 名，
+  # 🟥 inputs 必须带 type 字段（string/boolean/choice/number/environment）。
+  #    缺了不会报错，而是让整个手动触发静默失效：Actions 页面能列出 workflow，
   #    但右上角 `...` 菜单里只有 "Create status badge"，没有 "Run workflow"。
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: '要更新的 Release tag（如 v4.4.0）。留空则只构建、不发布'
+        required: false
+        type: string
 
 permissions:
   contents: write      # 创建 Release 需要
@@ -65,14 +69,17 @@ jobs:
             dist/*.exe
             *.zip
 
-      - name: 创建 Release 并上传
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: 创建或更新 Release
+        # 打 tag 时自动发；手动跑时填了 release_tag 就更新那个已有 Release
+        if: startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != ''
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.release_tag || github.ref_name }}
           files: |
             dist/*.exe
             *.zip
-          generate_release_notes: true
+          overwrite_files: true          # 同名产物直接覆盖，用于修正已发版本的内容
+          generate_release_notes: false  # 更新时不重新生成，避免覆盖手写的说明
           draft: false
           prerelease: false
         env:
