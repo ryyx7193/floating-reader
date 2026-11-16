@@ -117,7 +117,7 @@
         /* 🆕 V4.3.54（吸色联动）：跟随目标程序时，主进程采到的目标界面框架主色着在标题栏上。
            0.26 的低透明度只做一层「风格膜」，文字对比度不受影响；变量由 app.js:applyCompanionTint 写入。 */
         body.companion-tint .title-bar { background-color:rgba(var(--cmp-tint-r,240),var(--cmp-tint-g,242),var(--cmp-tint-b,245),0.26); }
-        /* 🟥 V4.3.93（需求：「目标程序是黑色的，阅读器却没变黑」）
+        /* 🟥 V4.3.93（自动吸色不准：目标程序是黑色的，阅读器没变黑）
            旧实现只给标题栏叠了 26% 的色 —— 正文区一动不动，所以"目标黑、阅读器白"是必然结果。
            现在按 --cmp-tint-mix（渲染层按目标色亮度算：暗 88% / 中 70% / 浅 45%）
            把目标色混进 #mainContent 的**底色**。字色由 applyCompanionTint 同步反色。

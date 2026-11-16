@@ -17,7 +17,7 @@ app.on('web-contents-created', (e, wc) => {
     wc.setWindowOpenHandler(({ url }) => { openSafeExternal(url); return { action: 'deny' }; });
     /* 🟥 V4.3.97 第 3 轮（P1，实测复现）：S-2 第一版只按**文件名后缀**放行，
        实测 `file://evilhost/index.html`、`file:///C:/Windows/System32/index.html`、
-       `file:///C:/Users/*/Downloads/index.html` 全部返回 true ⇒ 白名单形同虚设，
+       `file:///C:/Users/<user>/Downloads/index.html` 全部返回 true ⇒ 白名单形同虚设，
        任意本地/UNC 同名 HTML 都能加载并沿用主窗 preload 的完整 readerAPI。
        现在改为：① 必须是 file: 且 hostname 为空（挡 UNC/远程主机）；
        ② 解码后的绝对路径必须**落在本应用目录内**且文件名恰为 index.html / panel.html。

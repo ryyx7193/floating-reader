@@ -330,7 +330,7 @@ body.dsg-read .title-bar { -webkit-app-region:drag; }
 /* 正文区上下不再被自有 chrome 挤占 */
 body.dsg-read #mainContent { padding:0 !important; }
 
-/* 🟥 V4.3.92b（需求：「左右两边是留空的……上下状态栏超出了阅读区，左右栏没有内容，结构非常奇怪」）
+/* 🟥 V4.3.92b（版面结构异常：左右两边留空、状态栏超出阅读区、左右栏没有内容）
    根因是**三层内衬叠出来的**，不是一处：
      · `#app` 有 `padding: var(--win-pad)`（默认 20px）—— 这是给窗口投影/圆角留的透明边；
      · `#mainContent` 还有 1px 边框 + `--r-window` 圆角 + 投影 —— 一张"卡片"；
