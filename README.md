@@ -31,7 +31,7 @@
 **读**
 
 - 三种阅读模式，各自独立开关：滚动、分页、单行。分页按窗口高度切屏，一章到底就停
-- 字号缩放、14 种中文字体、浅色/深色皮肤，也能导入自定义 CSS 主题
+- 字号缩放、二十多种字体可选（思源黑体/宋体、霞鹜文楷、鸿蒙黑体、MiSans、阿里普惠体等）、浅色/深色皮肤，也能导入自定义 CSS 主题
 - 窗口透明度用 `Ctrl+滚轮` 调
 - **吸色**：取窗口下沿的桌面背景色自动融入，窗口不会像贴上去的一块补丁
 - **朗读**：走系统语音合成，可调语速和音色
@@ -105,8 +105,9 @@ npm start
 npm run dist            # 打 NSIS 安装包
 ```
 
-`package.json` 里的 `build.electronDist` 指向本地 `../electron`（开发时用的离线缓存）。
-你那边没这个目录的话，把这一行删掉，让 electron-builder 自己下载对应版本。
+⚠️ `package.json` 里的 `build.electronDist` 指向本地 `../electron`，那是开发时用的离线缓存。
+**不删这一行 `npm run dist` 会直接失败**（找不到 Electron 运行时）。你那边没这个目录的话，
+把这一行删掉，让 electron-builder 自己去下载。
 
 想跑实机自检：
 
@@ -120,7 +121,7 @@ npx electron tests/live-sweep.js
 ## 改代码
 
 ```bash
-git clone <本仓库地址>
+git clone https://github.com/ryyx7193/floating-reader.git
 cd floating-reader
 npm install
 node _build_app.js
@@ -155,7 +156,7 @@ npx electron tests/tts-bg-probe.js          # 后台朗读（无语音环境会 
 
 - 主要面向 Windows。文件关联、注册表、取色都走 Win32 API，macOS 只做了托盘模板图标这类基础适配
 - 没有代码签名，SmartScreen 会提示未知发布者
-- 安装包 116 MB 左右，大头是 Electron 运行时
+- 安装包 111 MB 左右，大头是 Electron 运行时
 
 ## 反馈
 
