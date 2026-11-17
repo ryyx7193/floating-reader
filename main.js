@@ -391,7 +391,7 @@ async function countScreenMagenta() {
 
 async function runProtectSelfTest() {
   const _pi = protectInfo();
-  const out = { verdict: 'unknown', offCount: -1, onCount: -1, level: _pi.level, note: _pi.note, platform: process.platform };
+  const out = { verdict: 'unknown', offCount: -1, onCount: -1, ratio: -1, level: _pi.level, note: _pi.note, platform: process.platform };
   let testWin = null;
   try {
     // 自检期间先确保业务窗口不是「恰好被保护」的状态，避免干扰：只动测试窗，业务窗保持原样
@@ -414,8 +414,13 @@ async function runProtectSelfTest() {
     await new Promise(r => setTimeout(r, 600));
     out.onCount = await countScreenMagenta();
 
+    /* 开保护后残留的品红像素按「关保护时的比例」算，不按绝对个数。
+       新版 Electron 的 desktopCapturer 抓屏时会把受保护窗口的边角/抗锯齿像素算进来（实测约 0.26%），
+       主体已经变黑（保护生效），但若沿用 onCount>0 就算失败的零容忍判据会误报成「没生效」。
+       1% 容差：0.26% 这类边角残留判为生效；真失效时 onCount 接近 offCount（>1%）仍然报红。 */
+    out.ratio = out.offCount > 0 ? (out.onCount / out.offCount) : -1;
     if (out.offCount <= 0 && out.onCount <= 0) out.verdict = 'unavailable';
-    else if (out.offCount > 0 && out.onCount === 0) out.verdict = 'ok';
+    else if (out.offCount > 0 && out.ratio <= 0.01) out.verdict = 'ok';
     else if (out.onCount > 0) out.verdict = 'ineffective';
     else out.verdict = 'unknown';
     logToFile('info', '脱监自检 ' + JSON.stringify(out));
