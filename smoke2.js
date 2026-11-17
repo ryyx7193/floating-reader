@@ -286,15 +286,15 @@ app.whenReady().then(async () => {
     //    ⚠️ 这条断言的**真实语义**是"每个标题栏按钮里都有线条 SVG"（不是"有几个按钮"）：
     //    新加的 🐋 最初用的是 emoji 字形（一个 span），就是被它逼着改成 SVG 的 —— 正合 main.css
     //    顶部"标题栏图标统一用同规格描边图标，不用 ⊞❓ 这类字形图标"那条约定。别把期望值改成 '0'。
-    //    🟥 写这条注释时踩了**第六次**同一个坑：这段代码整体在 executeJavaScript 的模板串里，
-    //       注释里出现反引号会把模板串当场截断 —— 症状是 EVAL ERROR span is not defined
-    //       （反引号里的 span 变成了变量）。语法门禁**抓不到**（截断后仍是合法 JS），只有冒烟能抓。
+    //    🟥 这段代码整体在 executeJavaScript 的模板串里，注释里不能出现反引号 ——
+    //       反引号会把模板串当场截断（报 EVAL ERROR）。截断后仍是合法 JS，
+    //       语法检查发现不了，只有冒烟能抓到。
     out.titleIcons = Array.from(document.querySelectorAll('.title-bar button')).map(b => (b.querySelector('svg') ? '1' : '0')).join('');
     out.disguiseBtnMoved = !document.getElementById('disguiseBtn');
 
     /* 🗑 V4.3.79：阅读统计（bumpReadingStats / frs 写入断言）已随功能整体移除。 */
 
-    // 🟥 V4.3.19 脱离监控：**默认关闭**（用户定案）；setContentProtect(true) 后开启，再 toggle 关闭。
+    // 🟥 V4.3.19 脱离监控：**默认关闭**；setContentProtect(true) 后开启，再 toggle 关闭。
     // 断言的是【主进程侧真实状态】（走 IPC 读回 contentProtectOn），不是渲染层的自说自话 ——
     // 本机实测：关保护 aff=0、开保护 aff=17(WDA_EXCLUDEFROMCAPTURE)、截屏品红像素 249273 -> 0。
     try {

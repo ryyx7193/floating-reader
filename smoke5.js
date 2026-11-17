@@ -1,5 +1,5 @@
 // SMOKE5：修复项回归
-// 1)「恢复默认设置」之后快捷键仍是 12 项（缺陷 #1；V4.3.19 起脱监并入 9→10，V4.3.25 加目录 10→11，V4.3.29 加书签 11→12）
+// 1)「恢复默认设置」之后快捷键仍是 12 项（V4.3.19 起脱监并入 9→10，V4.3.25 加目录 10→11，V4.3.29 加书签 11→12）
 // 2) 版本号单点化：运行时版本 = package.json 版本，且标题 / 书架导出同源
 const { app, BrowserWindow, ipcMain } = require('electron');
 const fs = require('fs');
@@ -73,7 +73,7 @@ app.whenReady().then(async () => {
     // 🟥 V4.3.19：脱监（脱离监控）加入快捷键系统 → 9 项变 10 项；V4.3.25 又加「目录」→ 11 项；
     //    📑 V4.3.29 加「书签」→ 12 项（改 DEFAULT_SHORTCUTS 必须同步这三处计数）
     expect('DEFAULT_SHORTCUTS 应为 12 项', out.defaultCount === 12, out.defaultCount);
-    expect('重置后快捷键不是 12 项（缺陷 #1 复发）', out.afterCount === 12, out.afterCount);
+    expect('重置后快捷键不是 12 项', out.afterCount === 12, out.afterCount);
     ['search', 'globalSearch', 'autoScroll', 'pickPoint', 'toolbar'].forEach(k => {
       expect('重置后缺少快捷键 ' + k, String(out.afterKeys).split(',').indexOf(k) >= 0, out.afterKeys);
     });

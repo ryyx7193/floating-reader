@@ -1,6 +1,5 @@
 // SMOKE6：本地文档加载管线（txt / epub / pdf）+ 扩展名单点化
-// 为什么要这一套：PDF/EPUB 管线此前**零测试覆盖**，EPUB 更是悄悄坏了好几个版本没人发现
-// （缺 JSZip + 用错 epub.js API），所以这里用真实 fixture 走完整 loadFiles 链路，不再靠肉眼。
+// 用真实 fixture 走完整 loadFiles 链路，覆盖 PDF/EPUB 的加载与解析，不依赖肉眼检查。
 // fixture：../\_fixtures/ 下的 鲸鱼测试本.epub（3 章，带真实 toc）与 鲸鱼测试本.pdf（1 页）
 const { app, BrowserWindow } = require('electron');
 const fs = require('fs');

@@ -5,7 +5,7 @@ const fs = require('fs');
 app.setPath('userData', path.join(__dirname, '..', '_smoke_userdata'));
 const problems = [];
 // 端到端按钮验证：记录小窗真实发出的 panel:action（V4.2.4 起加入——
-// 伪装按钮曾因只在元素存在性上断言、漏掉了「toolbar 分支没接 action」，按钮整整死了四个版本）
+// 只断言元素存在不够，还要确认按钮真的发出了 panel:action）
 const panelActionsSeen = [];
 ipcMain.on('panel:action', (e, p) => { if (p && p.action) panelActionsSeen.push(p.action); });
 // 关闭最后一个窗口时不要退出，否则后续窗口会加载失败
@@ -59,7 +59,7 @@ app.whenReady().then(async () => {
       // 🟥 V4.3.53：原先按「最后一段」取 disguise / 前台监听段 —— 伴随模式作为新的尾段加进来
       //    之后，最后一段就不是它了，判据当场失真。改成**按 h3 名定位**，以后再加段也不会破。
       //    这条判据守的是 PANEL_LIST_TEXT 与 DOM 顺序**错位**：表一旦被插错位置，
-      //    从这里读到的就是别的条目文本（V4.3.53 加伴随模式段时实际就是这么被抓到的）。
+      //    从这里读到的就会是别的条目文本。
       const secs = Array.from(document.querySelectorAll('#view-settings .section'));
       const pickSec = n => {
         const s = secs.find(x => { const h = x.querySelector('h3'); return h && h.textContent.trim() === n; });
@@ -120,7 +120,7 @@ app.whenReady().then(async () => {
       out.buttons = document.querySelectorAll('#view-toolbar .btn').length;
       // 📑 V4.3.29 书签重构三连：① 工具条上独立的「书签」按钮必须已撤（功能并入书签列表）
       out.toolbarBookmarkBtn = document.querySelectorAll('#view-toolbar [data-a="bookmark"]').length;
-      // ② 「列表」改名全称「书签列表」（用户明确要求显示全称）
+      // ② 「列表」改名全称「书签列表」
       const bmEl = document.querySelector('#view-toolbar [data-a="bookmarks"] .label');
       out.bookmarksLabel = bmEl ? bmEl.textContent : '';
       // ③ 独立书签列表面板必须存在
@@ -195,7 +195,7 @@ app.whenReady().then(async () => {
     problems.push('SHELFBTN EVAL: ' + ((e && e.message) || e));
   }
 
-  // 🟥 V4.3.23（用户报「书架 ↗ 按钮怎么没了」）：动作卡必须**恒为三张**——
+  // 🟥 V4.3.23：动作卡必须**恒为三张**——
   // 没有来源网址时置灰（.off）而不是不渲染，否则用户会以为按钮丢了。
   try {
     const shelfWin = await openPanel('shelf');
